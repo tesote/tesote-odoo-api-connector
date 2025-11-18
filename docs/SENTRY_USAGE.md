@@ -28,6 +28,107 @@ Sentry automatically captures all unhandled exceptions that occur within the `te
 - Errors from Odoo core
 - Errors from third-party dependencies (unless called from our code)
 
+## HTTP Request/Response Breadcrumbs
+
+The adapter automatically adds detailed breadcrumbs for all HTTP requests and responses to the tesote.com API. This makes debugging API issues much easier by providing a complete audit trail in Sentry.
+
+### What's Captured
+
+For **each HTTP request**, the following information is captured:
+- HTTP method (GET, POST, etc.)
+- Full URL
+- Request headers (with sensitive values redacted)
+- Request body (truncated if > 5KB)
+
+For **each HTTP response**, the following information is captured:
+- HTTP method and URL
+- Status code
+- Response headers (with sensitive values redacted)
+- Response body (truncated if > 5KB)
+
+For **network errors** (timeout, connection errors):
+- Error type and message
+- Request details that failed
+
+### Security Features
+
+Sensitive headers are automatically redacted:
+- `Authorization: ***REDACTED***`
+- `X-API-Key: ***REDACTED***`
+- `Cookie: ***REDACTED***`
+- `Set-Cookie: ***REDACTED***`
+
+Large payloads (>5KB) are automatically truncated to prevent breadcrumb bloat.
+
+### Example Breadcrumb Data
+
+When viewing an error in Sentry, you'll see breadcrumbs like:
+
+```
+Tesote API REQUEST: POST https://api.tesote.com/api/v2/accounts/acc_123/transactions/sync
+  method: POST
+  url: https://api.tesote.com/api/v2/accounts/acc_123/transactions/sync
+  headers:
+    Authorization: ***REDACTED***
+    Content-Type: application/json
+    User-Agent: TesoteOdooConnector/18.0.1.0.0 (API/v2; Odoo/18.0; Python/requests)
+  body:
+    cursor: "csr_abc123"
+    count: 100
+
+Tesote API RESPONSE: POST https://api.tesote.com/api/v2/accounts/acc_123/transactions/sync
+  method: POST
+  url: https://api.tesote.com/api/v2/accounts/acc_123/transactions/sync
+  status_code: 200
+  headers:
+    Content-Type: application/json
+    X-RateLimit-Limit: 200
+    X-RateLimit-Remaining: 150
+  response:
+    added: [...]
+    modified: []
+    removed: []
+    next_cursor: "csr_xyz789"
+    has_more: false
+```
+
+This provides complete visibility into API interactions when debugging errors.
+
+### Development vs Production Logging
+
+The module includes smart logging that changes based on your environment:
+
+**Development Mode** (when `--dev=all` flag is used or `ODOO_ENV=development`):
+- Detailed request bodies logged to console
+- Detailed response bodies logged to console
+- Rate limit information shown
+- Full sync request details displayed
+- Sentry breadcrumbs captured (always active)
+
+**Production Mode**:
+- Only high-level summaries logged (`API Request: POST /api/v2/...`, `Response status: 200`)
+- Sync statistics logged (`Sync result: 5 added, 2 modified, 0 removed`)
+- Error status codes without full body (body still captured in Sentry)
+- Sentry breadcrumbs captured (always active)
+
+**How to enable dev mode logging:**
+```bash
+# Docker (already configured)
+./bin/docker-dev up  # Uses --dev=all in docker-compose.yml
+
+# Manual Odoo
+odoo --dev=all -d your_database
+
+# Environment variable (fallback)
+export ODOO_ENV=development
+odoo -d your_database
+```
+
+**Why this matters:**
+- In development: Full visibility for debugging
+- In production: Clean logs, sensitive data protected, full details in Sentry
+- Sentry always captures everything regardless of environment
+
 ## Manual Error Capture
 
 For specific error scenarios where you want to explicitly send an error to Sentry:

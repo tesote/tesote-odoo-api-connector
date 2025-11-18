@@ -126,6 +126,35 @@ Located at `docker-compose.yml`:
 - Persistent volumes for database and filestore
 - Health checks for all services
 - Automatic module installation
+- Development environment configured (`ODOO_ENV=development` + `--dev=all`)
+
+### Switching Between Development and Production Logging
+
+The tesote_connector module automatically adjusts logging verbosity based on environment:
+
+**Development Mode (default in Docker):**
+```yaml
+environment:
+  - ODOO_ENV=development  # Detailed API request/response logs
+command: odoo --dev=all
+```
+
+**Production Mode (for production deployments):**
+```yaml
+environment:
+  - ODOO_ENV=production  # Minimal console logs, full details in Sentry
+command: odoo  # Remove --dev=all flag
+```
+
+In development mode, you'll see:
+- Full request bodies in console logs
+- Full response bodies in console logs
+- Rate limit information
+- Detailed sync request information
+
+In production mode, you'll see:
+- Only high-level summaries in console
+- Full details still captured in Sentry breadcrumbs
 
 ## Troubleshooting
 

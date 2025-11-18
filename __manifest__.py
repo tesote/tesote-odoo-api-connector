@@ -122,9 +122,7 @@ API Documentation: https://equipo.tesote.com/api/docs?version=v2
     "post_init_hook": "post_init_hook",
     "pre_uninstall_hook": "pre_uninstall_hook",
     "images": [
-        "static/description/banner.png",
-        "static/description/screenshot_1.png",
-        "static/description/screenshot_2.png",
+        "static/description/icon.png",
     ],
     "installable": True,
     "application": True,

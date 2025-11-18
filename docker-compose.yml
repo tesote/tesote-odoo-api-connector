@@ -28,6 +28,7 @@ services:
       - USER=odoo
       - PASSWORD=odoo
       - DB_NAME=tesote_dev
+      - ODOO_ENV=production  # Controls verbose logging in tesote_connector
     volumes:
       # Mount our module (now at repository root)
       - ./:/mnt/extra-addons/tesote_connector:ro
@@ -37,7 +38,7 @@ services:
       - odoo_filestore:/var/lib/odoo
       # Backups
       - ./backups:/mnt/backups
-    command: odoo --dev=all
+    command: odoo
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
       interval: 10s

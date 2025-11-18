@@ -7,6 +7,7 @@ Implements communication with Tesote API v2.0.0 following SOLID principles.
 """
 
 import logging
+import os
 from typing import Any
 from urllib.parse import urljoin
 
@@ -15,11 +16,115 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+# Try to import Sentry for breadcrumb tracking
+try:
+    import sentry_sdk
+    SENTRY_AVAILABLE = True
+except ImportError:
+    SENTRY_AVAILABLE = False
+
+
+def _is_dev_mode():
+    """
+    Check if running in development mode.
+
+    Returns:
+        bool: True if in development mode, False if production
+    """
+    try:
+        from odoo.tools import config
+        # Check if --dev mode is enabled (dev mode can be 'all', 'reload', 'qweb', etc.)
+        return bool(config.get('dev_mode'))
+    except (ImportError, Exception):
+        # Fallback: check environment variable
+        return os.environ.get('ODOO_ENV', 'production').lower() in ['development', 'dev']
+
 
 class NetworkRetryableError(Exception):
     """Exception for network errors that should be retried."""
 
     pass
+
+
+def _add_http_breadcrumb(
+    breadcrumb_type: str,
+    method: str = None,
+    url: str = None,
+    status_code: int = None,
+    headers: dict = None,
+    body: Any = None,
+    response_body: Any = None,
+):
+    """
+    Add HTTP request/response breadcrumb to Sentry for debugging.
+
+    Args:
+        breadcrumb_type: 'request' or 'response'
+        method: HTTP method (GET, POST, etc.)
+        url: Request URL
+        status_code: HTTP status code (for responses)
+        headers: HTTP headers
+        body: Request body (for requests)
+        response_body: Response body (for responses)
+    """
+    if not SENTRY_AVAILABLE:
+        return
+
+    try:
+        # Filter sensitive headers
+        filtered_headers = {}
+        if headers:
+            for key, value in headers.items():
+                if key.lower() in ["authorization", "x-api-key", "cookie", "set-cookie"]:
+                    filtered_headers[key] = "***REDACTED***"
+                else:
+                    filtered_headers[key] = value
+
+        # Build breadcrumb data
+        data = {}
+
+        if breadcrumb_type == "request":
+            data = {
+                "method": method,
+                "url": url,
+                "headers": filtered_headers,
+            }
+            if body:
+                # Limit body size to avoid huge breadcrumbs
+                import json
+                body_str = json.dumps(body) if isinstance(body, dict) else str(body)
+                if len(body_str) > 5000:
+                    data["body"] = body_str[:5000] + "... (truncated)"
+                else:
+                    data["body"] = body
+
+        elif breadcrumb_type == "response":
+            data = {
+                "method": method,
+                "url": url,
+                "status_code": status_code,
+                "headers": filtered_headers,
+            }
+            if response_body:
+                # Limit response size
+                import json
+                body_str = json.dumps(response_body) if isinstance(response_body, dict) else str(response_body)
+                if len(body_str) > 5000:
+                    data["response"] = body_str[:5000] + "... (truncated)"
+                else:
+                    data["response"] = response_body
+
+        # Add breadcrumb to Sentry
+        sentry_sdk.add_breadcrumb(
+            category="http",
+            level="info",
+            message=f"Tesote API {breadcrumb_type.upper()}: {method} {url}" if method and url else f"Tesote API {breadcrumb_type.upper()}",
+            data=data,
+        )
+
+    except Exception as e:
+        # Don't let breadcrumb errors break the request
+        _logger.debug(f"Failed to add Sentry breadcrumb: {e}")
 
 
 class TesoteAdapter:
@@ -105,18 +210,29 @@ class TesoteAdapter:
             UserError: For API errors
         """
         url = self._get_url(endpoint, **kwargs)
+        is_dev = _is_dev_mode()
 
         try:
+            # Basic request logging (always shown)
             _logger.info(f"API Request: {method} {url}")
 
-            # Log request details for debugging
-            if data:
-                import json
+            # Detailed request logging (dev mode only)
+            if is_dev:
+                if data:
+                    import json
+                    _logger.info(f"Request body: {data}")
+                    _logger.info(f"Request JSON: {json.dumps(data, indent=2)}")
+                if params:
+                    _logger.info(f"Request params: {params}")
 
-                _logger.info(f"Request body: {data}")
-                _logger.info(f"Request JSON: {json.dumps(data, indent=2)}")
-            if params:
-                _logger.info(f"Request params: {params}")
+            # Add Sentry breadcrumb for request (always active)
+            _add_http_breadcrumb(
+                breadcrumb_type="request",
+                method=method,
+                url=url,
+                headers=dict(self.session.headers),
+                body=data,
+            )
 
             response = self.session.request(
                 method=method,
@@ -126,13 +242,35 @@ class TesoteAdapter:
                 timeout=30,
             )
 
-            # Log response for debugging errors
+            # Basic response logging (always shown)
             _logger.info(f"Response status: {response.status_code}")
-            if response.status_code >= 400:
-                _logger.error(f"Error response body: {response.text}")
 
-            # Log rate limit info
-            if "X-RateLimit-Remaining" in response.headers:
+            # Detailed error response logging (dev mode only, or always for errors >= 400)
+            if response.status_code >= 400:
+                if is_dev:
+                    _logger.error(f"Error response body: {response.text}")
+                else:
+                    # In production, just log that there was an error (body captured in Sentry)
+                    _logger.error(f"API error {response.status_code} (details in Sentry)")
+
+            # Parse response body for breadcrumb
+            try:
+                response_data = response.json() if response.text else {}
+            except Exception:
+                response_data = response.text
+
+            # Add Sentry breadcrumb for response
+            _add_http_breadcrumb(
+                breadcrumb_type="response",
+                method=method,
+                url=url,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                response_body=response_data,
+            )
+
+            # Log rate limit info (dev mode only)
+            if is_dev and "X-RateLimit-Remaining" in response.headers:
                 remaining = response.headers.get("X-RateLimit-Remaining")
                 limit = response.headers.get("X-RateLimit-Limit")
                 _logger.debug(f"Rate limit: {remaining}/{limit} requests remaining")
@@ -182,11 +320,38 @@ class TesoteAdapter:
 
             return response.json() if response.text else {}
 
-        except requests.exceptions.Timeout:
+        except requests.exceptions.Timeout as e:
+            # Add error breadcrumb
+            _add_http_breadcrumb(
+                breadcrumb_type="response",
+                method=method,
+                url=url,
+                status_code=0,
+                headers={},
+                response_body={"error": "Request timeout", "exception": str(e)},
+            )
             raise NetworkRetryableError("Request timeout")
         except requests.exceptions.ConnectionError as e:
+            # Add error breadcrumb
+            _add_http_breadcrumb(
+                breadcrumb_type="response",
+                method=method,
+                url=url,
+                status_code=0,
+                headers={},
+                response_body={"error": "Connection error", "exception": str(e)},
+            )
             raise NetworkRetryableError(f"Connection error: {e}")
         except requests.exceptions.RequestException as e:
+            # Add error breadcrumb
+            _add_http_breadcrumb(
+                breadcrumb_type="response",
+                method=method,
+                url=url,
+                status_code=0,
+                headers={},
+                response_body={"error": "Request exception", "exception": str(e)},
+            )
             _logger.error(f"Request error: {e}")
             raise UserError(f"API request failed: {e}")
 
@@ -265,17 +430,19 @@ class TesoteAdapter:
             if cursor != "synced_without_history":
                 data["cursor"] = cursor
 
-        _logger.info(
-            f"=== SYNC TRANSACTIONS REQUEST ===\n"
-            f"Endpoint: POST /api/v2/accounts/{tesote_account_id}/transactions/sync\n"
-            f"Cursor: {cursor!r} (type: {type(cursor).__name__})\n"
-            f"Count: {data['count']}\n"
-            f"Request body: {data}"
-        )
+        # Detailed sync logging (dev mode only)
+        if _is_dev_mode():
+            _logger.info(
+                f"=== SYNC TRANSACTIONS REQUEST ===\n"
+                f"Endpoint: POST /api/v2/accounts/{tesote_account_id}/transactions/sync\n"
+                f"Cursor: {cursor!r} (type: {type(cursor).__name__})\n"
+                f"Count: {data['count']}\n"
+                f"Request body: {data}"
+            )
 
         result = self._request("POST", "transactions_sync", data=data, account_id=tesote_account_id)
 
-        # Log sync statistics
+        # Log sync statistics (always shown - high level summary)
         added = len(result.get("added", []))
         modified = len(result.get("modified", []))
         removed = len(result.get("removed", []))
