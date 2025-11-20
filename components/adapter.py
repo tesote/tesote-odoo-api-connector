@@ -26,19 +26,17 @@ except ImportError:
 
 
 def _is_dev_mode():
-    """
-    Check if running in development mode.
-
-    Returns:
-        bool: True if in development mode, False if production
-    """
     try:
         from odoo.tools import config
-        # Check if --dev mode is enabled (dev mode can be 'all', 'reload', 'qweb', etc.)
-        return bool(config.get('dev_mode'))
     except (ImportError, Exception):
-        # Fallback: check environment variable
-        return os.environ.get('ODOO_ENV', 'production').lower() in ['development', 'dev']
+        config = None
+
+    # 1) Native Odoo dev flag
+    if config is not None and config.get("dev_mode"):
+        return True
+
+    # 2) Env-based dev mode (documented alternative)
+    return os.environ.get("ODOO_ENV", "production").lower() in ("development", "dev")
 
 
 class NetworkRetryableError(Exception):
