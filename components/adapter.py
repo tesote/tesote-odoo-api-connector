@@ -326,7 +326,7 @@ class TesoteAdapter:
                             _logger.error(f"Error Body (truncated):\n{error_str[:500]}...")
                         else:
                             _logger.error(f"Error Body:\n{error_str}")
-                except:
+                except Exception:
                     _logger.error(f"Error Body (raw): {response.text[:500]}")
             else:
                 # Success logging (dev mode shows body)
@@ -339,7 +339,7 @@ class TesoteAdapter:
                             _logger.info(f"Response Body (truncated):\n{body_str[:2000]}...")
                         else:
                             _logger.info(f"Response Body:\n{body_str}")
-                    except:
+                    except Exception:
                         _logger.info(f"Response Body (raw): {response.text[:1000]}")
                 else:
                     _logger.info(f"✓ Success (response size: {len(response.text)} bytes)")
