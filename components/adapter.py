@@ -8,6 +8,7 @@ Implements communication with Tesote API v2.0.0 following SOLID principles.
 
 import logging
 import os
+import time
 from typing import Any
 from urllib.parse import urljoin
 
@@ -212,18 +213,63 @@ class TesoteAdapter:
         url = self._get_url(endpoint, **kwargs)
         is_dev = _is_dev_mode()
 
+        # Start timing
+        start_time = time.time()
+
         try:
-            # Basic request logging (always shown)
-            _logger.info(f"API Request: {method} {url}")
+            # Enhanced request logging header
+            _logger.info("=" * 80)
+            _logger.info(f"📤 HTTP REQUEST: {method} {url}")
+            _logger.info("=" * 80)
 
             # Detailed request logging (dev mode only)
             if is_dev:
+                _logger.info(f"🔍 DEBUG MODE - Full Request Details:")
+                _logger.info(f"Method: {method}")
+                _logger.info(f"URL: {url}")
+                _logger.info(f"Timeout: 30s")
+
+                _logger.info(f"\n📋 Headers:")
+                for key, value in self.session.headers.items():
+                    if key.lower() == 'authorization':
+                        # Show partial token for debugging
+                        token_preview = value.split()[-1] if ' ' in value else value
+                        _logger.info(f"  {key}: Bearer {token_preview[:10]}...{token_preview[-4:]}")
+                    else:
+                        _logger.info(f"  {key}: {value}")
+
+                if params:
+                    import json
+                    _logger.info(f"\n🔗 Query Params:")
+                    _logger.info(json.dumps(params, indent=2))
+
                 if data:
                     import json
-                    _logger.info(f"Request body: {data}")
-                    _logger.info(f"Request JSON: {json.dumps(data, indent=2)}")
+                    _logger.info(f"\n📦 Request Body:")
+                    _logger.info(json.dumps(data, indent=2))
+
+                # Generate curl command for easy testing
+                import json
+                curl_cmd = f"curl -X {method} '{url}'"
+                for key, value in self.session.headers.items():
+                    if key.lower() == 'authorization':
+                        token = value.split()[-1] if ' ' in value else value
+                        curl_cmd += f" \\\n  -H 'Authorization: Bearer YOUR_TOKEN_HERE'"
+                    else:
+                        curl_cmd += f" \\\n  -H '{key}: {value}'"
+                if data:
+                    curl_cmd += f" \\\n  -d '{json.dumps(data)}'"
                 if params:
-                    _logger.info(f"Request params: {params}")
+                    curl_cmd += f" \\\n  (params: {params})"
+
+                _logger.info(f"\n🔧 cURL Equivalent:")
+                _logger.info(curl_cmd)
+            else:
+                # In production, show minimal request info
+                if params:
+                    _logger.info(f"Params: {params}")
+                if data:
+                    _logger.info(f"Body keys: {list(data.keys()) if data else None}")
 
             # Add Sentry breadcrumb for request (always active)
             _add_http_breadcrumb(
@@ -242,16 +288,63 @@ class TesoteAdapter:
                 timeout=30,
             )
 
-            # Basic response logging (always shown)
-            _logger.info(f"Response status: {response.status_code}")
+            # Calculate request duration
+            duration_ms = (time.time() - start_time) * 1000
 
-            # Detailed error response logging (dev mode only, or always for errors >= 400)
+            # Enhanced response logging header
+            _logger.info("=" * 80)
+            _logger.info(f"📥 HTTP RESPONSE: {response.status_code} ({duration_ms:.0f}ms)")
+            _logger.info("=" * 80)
+
+            # Log response headers
+            if is_dev:
+                # Show all headers in dev mode
+                _logger.info(f"\n📋 Response Headers:")
+                for key, value in response.headers.items():
+                    _logger.info(f"  {key}: {value}")
+            else:
+                # Show only important headers in production
+                important_headers = ['content-type', 'x-ratelimit-remaining', 'x-ratelimit-limit', 'x-ratelimit-reset']
+                response_headers = {k: v for k, v in response.headers.items() if k.lower() in important_headers}
+                if response_headers:
+                    _logger.info(f"Response Headers: {response_headers}")
+
+            # Detailed error response logging
             if response.status_code >= 400:
+                _logger.error(f"❌ ERROR RESPONSE ({response.status_code})")
+                _logger.error(f"URL: {url}")
+                _logger.error(f"Duration: {duration_ms:.0f}ms")
+
+                # Always show error response body (truncated in production)
+                try:
+                    error_body = response.json() if response.text else {}
+                    import json
+                    if is_dev:
+                        _logger.error(f"Error Body:\n{json.dumps(error_body, indent=2)}")
+                    else:
+                        # Show first 500 chars in production
+                        error_str = json.dumps(error_body, indent=2)
+                        if len(error_str) > 500:
+                            _logger.error(f"Error Body (truncated):\n{error_str[:500]}...")
+                        else:
+                            _logger.error(f"Error Body:\n{error_str}")
+                except:
+                    _logger.error(f"Error Body (raw): {response.text[:500]}")
+            else:
+                # Success logging (dev mode shows body)
                 if is_dev:
-                    _logger.error(f"Error response body: {response.text}")
+                    try:
+                        response_body = response.json() if response.text else {}
+                        import json
+                        body_str = json.dumps(response_body, indent=2)
+                        if len(body_str) > 2000:
+                            _logger.info(f"Response Body (truncated):\n{body_str[:2000]}...")
+                        else:
+                            _logger.info(f"Response Body:\n{body_str}")
+                    except:
+                        _logger.info(f"Response Body (raw): {response.text[:1000]}")
                 else:
-                    # In production, just log that there was an error (body captured in Sentry)
-                    _logger.error(f"API error {response.status_code} (details in Sentry)")
+                    _logger.info(f"✓ Success (response size: {len(response.text)} bytes)")
 
             # Parse response body for breadcrumb
             try:
@@ -269,11 +362,7 @@ class TesoteAdapter:
                 response_body=response_data,
             )
 
-            # Log rate limit info (dev mode only)
-            if is_dev and "X-RateLimit-Remaining" in response.headers:
-                remaining = response.headers.get("X-RateLimit-Remaining")
-                limit = response.headers.get("X-RateLimit-Limit")
-                _logger.debug(f"Rate limit: {remaining}/{limit} requests remaining")
+            _logger.info("=" * 80)
 
             # Handle errors
             if response.status_code == 429:
@@ -425,10 +514,10 @@ class TesoteAdapter:
 
         # Only include cursor if it's provided and not None
         # For initial sync, omit cursor entirely (don't send null)
-        if cursor is not None:
-            # Skip if it's our special marker
-            if cursor != "synced_without_history":
-                data["cursor"] = cursor
+        # if cursor is not None:
+        #     # Skip if it's our special marker
+        #     if cursor != "synced_without_history":
+        #         data["cursor"] = cursor
 
         # Detailed sync logging (dev mode only)
         if _is_dev_mode():

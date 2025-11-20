@@ -1,0 +1,16 @@
+# Development Dockerfile with debugging and colored logging support
+FROM odoo:18.0
+
+USER root
+
+# Install development dependencies
+# Using --break-system-packages is safe in Docker containers
+RUN pip install --no-cache-dir --break-system-packages \
+    colorlog>=6.8.0 \
+    debugpy>=1.8.0 \
+    ipdb>=0.13.13 \
+    sentry-sdk>=2.0.0
+
+USER odoo
+
+# The module is mounted via volume, so no COPY needed

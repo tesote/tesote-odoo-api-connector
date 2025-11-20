@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Setup development environment with all tools
+
+set -e
+
+echo "🚀 Setting up Tesote Odoo Connector Development Environment"
+echo "============================================================"
+echo ""
+
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "❌ uv is not installed"
+    echo "📥 Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo "✅ uv installed"
+fi
+
+echo "📦 Installing dependencies (including debugger and colored logging)..."
+uv sync --dev
+
+echo ""
+echo "🔧 Configuring development mode..."
+./bin/toggle-log-mode dev
+
+echo ""
+echo "🐳 Building Docker containers..."
+docker compose build
+
+echo ""
+echo "✅ Development environment ready!"
+echo ""
+echo "Next steps:"
+echo "  1. Start containers:     docker compose up -d"
+echo "  2. Watch logs:           ./bin/view-logs follow"
+echo "  3. Attach debugger:      Press F5 in VSCode"
+echo ""
+echo "📖 See docs/DEVELOPMENT.md for full documentation"
