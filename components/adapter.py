@@ -20,6 +20,7 @@ _logger = logging.getLogger(__name__)
 # Try to import Sentry for breadcrumb tracking
 try:
     import sentry_sdk
+
     SENTRY_AVAILABLE = True
 except ImportError:
     SENTRY_AVAILABLE = False
@@ -91,6 +92,7 @@ def _add_http_breadcrumb(
             if body:
                 # Limit body size to avoid huge breadcrumbs
                 import json
+
                 body_str = json.dumps(body) if isinstance(body, dict) else str(body)
                 if len(body_str) > 5000:
                     data["body"] = body_str[:5000] + "... (truncated)"
@@ -107,7 +109,12 @@ def _add_http_breadcrumb(
             if response_body:
                 # Limit response size
                 import json
-                body_str = json.dumps(response_body) if isinstance(response_body, dict) else str(response_body)
+
+                body_str = (
+                    json.dumps(response_body)
+                    if isinstance(response_body, dict)
+                    else str(response_body)
+                )
                 if len(body_str) > 5000:
                     data["response"] = body_str[:5000] + "... (truncated)"
                 else:
@@ -117,7 +124,9 @@ def _add_http_breadcrumb(
         sentry_sdk.add_breadcrumb(
             category="http",
             level="info",
-            message=f"Tesote API {breadcrumb_type.upper()}: {method} {url}" if method and url else f"Tesote API {breadcrumb_type.upper()}",
+            message=f"Tesote API {breadcrumb_type.upper()}: {method} {url}"
+            if method and url
+            else f"Tesote API {breadcrumb_type.upper()}",
             data=data,
         )
 
@@ -222,37 +231,40 @@ class TesoteAdapter:
 
             # Detailed request logging (dev mode only)
             if is_dev:
-                _logger.info(f"🔍 DEBUG MODE - Full Request Details:")
+                _logger.info("🔍 DEBUG MODE - Full Request Details:")
                 _logger.info(f"Method: {method}")
                 _logger.info(f"URL: {url}")
-                _logger.info(f"Timeout: 30s")
+                _logger.info("Timeout: 30s")
 
-                _logger.info(f"\n📋 Headers:")
+                _logger.info("\n📋 Headers:")
                 for key, value in self.session.headers.items():
-                    if key.lower() == 'authorization':
+                    if key.lower() == "authorization":
                         # Show partial token for debugging
-                        token_preview = value.split()[-1] if ' ' in value else value
+                        token_preview = value.split()[-1] if " " in value else value
                         _logger.info(f"  {key}: Bearer {token_preview[:10]}...{token_preview[-4:]}")
                     else:
                         _logger.info(f"  {key}: {value}")
 
                 if params:
                     import json
-                    _logger.info(f"\n🔗 Query Params:")
+
+                    _logger.info("\n🔗 Query Params:")
                     _logger.info(json.dumps(params, indent=2))
 
                 if data:
                     import json
-                    _logger.info(f"\n📦 Request Body:")
+
+                    _logger.info("\n📦 Request Body:")
                     _logger.info(json.dumps(data, indent=2))
 
                 # Generate curl command for easy testing
                 import json
+
                 curl_cmd = f"curl -X {method} '{url}'"
                 for key, value in self.session.headers.items():
-                    if key.lower() == 'authorization':
-                        token = value.split()[-1] if ' ' in value else value
-                        curl_cmd += f" \\\n  -H 'Authorization: Bearer YOUR_TOKEN_HERE'"
+                    if key.lower() == "authorization":
+                        token = value.split()[-1] if " " in value else value
+                        curl_cmd += " \\\n  -H 'Authorization: Bearer YOUR_TOKEN_HERE'"
                     else:
                         curl_cmd += f" \\\n  -H '{key}: {value}'"
                 if data:
@@ -260,7 +272,7 @@ class TesoteAdapter:
                 if params:
                     curl_cmd += f" \\\n  (params: {params})"
 
-                _logger.info(f"\n🔧 cURL Equivalent:")
+                _logger.info("\n🔧 cURL Equivalent:")
                 _logger.info(curl_cmd)
             else:
                 # In production, show minimal request info
@@ -297,13 +309,20 @@ class TesoteAdapter:
             # Log response headers
             if is_dev:
                 # Show all headers in dev mode
-                _logger.info(f"\n📋 Response Headers:")
+                _logger.info("\n📋 Response Headers:")
                 for key, value in response.headers.items():
                     _logger.info(f"  {key}: {value}")
             else:
                 # Show only important headers in production
-                important_headers = ['content-type', 'x-ratelimit-remaining', 'x-ratelimit-limit', 'x-ratelimit-reset']
-                response_headers = {k: v for k, v in response.headers.items() if k.lower() in important_headers}
+                important_headers = [
+                    "content-type",
+                    "x-ratelimit-remaining",
+                    "x-ratelimit-limit",
+                    "x-ratelimit-reset",
+                ]
+                response_headers = {
+                    k: v for k, v in response.headers.items() if k.lower() in important_headers
+                }
                 if response_headers:
                     _logger.info(f"Response Headers: {response_headers}")
 
@@ -317,6 +336,7 @@ class TesoteAdapter:
                 try:
                     error_body = response.json() if response.text else {}
                     import json
+
                     if is_dev:
                         _logger.error(f"Error Body:\n{json.dumps(error_body, indent=2)}")
                     else:
@@ -334,6 +354,7 @@ class TesoteAdapter:
                     try:
                         response_body = response.json() if response.text else {}
                         import json
+
                         body_str = json.dumps(response_body, indent=2)
                         if len(body_str) > 2000:
                             _logger.info(f"Response Body (truncated):\n{body_str[:2000]}...")
@@ -512,10 +533,10 @@ class TesoteAdapter:
 
         # Only include cursor if it's provided and not None
         # For initial sync, omit cursor entirely (don't send null)
-        # if cursor is not None:
-        #     # Skip if it's our special marker
-        #     if cursor != "synced_without_history":
-        #         data["cursor"] = cursor
+        if cursor is not None:
+            # Skip if it's our special marker
+            if cursor != "synced_without_history":
+                data["cursor"] = cursor
 
         # Detailed sync logging (dev mode only)
         if _is_dev_mode():
