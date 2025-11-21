@@ -138,9 +138,7 @@ class TestSentryConfig:
                         "stacktrace": {
                             "frames": [
                                 {"filename": "/odoo/addons/base/models/ir_model.py"},
-                                {
-                                    "filename": "/odoo/addons/tesote_connector/components/adapter.py"
-                                },
+                                {"filename": "/odoo/addons/tesote_connector/components/adapter.py"},
                             ]
                         }
                     }

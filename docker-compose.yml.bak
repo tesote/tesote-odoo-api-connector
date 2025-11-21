@@ -32,7 +32,7 @@ services:
       - USER=odoo
       - PASSWORD=odoo
       - DB_NAME=tesote_dev
-      - ODOO_ENV=production       # Controls verbose logging in tesote_connector
+      - ODOO_ENV=development       # Controls verbose logging in tesote_connector
       - ENABLE_DEBUGPY=true        # Enable remote debugging
       - PYTHONUNBUFFERED=1         # Force Python to output everything immediately
       - LOG_LEVEL=debug            # Set Odoo log level

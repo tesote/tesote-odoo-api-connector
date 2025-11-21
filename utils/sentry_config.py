@@ -71,9 +71,7 @@ def _should_capture_event(event, hint):
                 ]
             ):
                 # This is from our module, capture it
-                _logger.debug(
-                    f"Capturing Sentry event from {frame.filename}:{frame.lineno}"
-                )
+                _logger.debug(f"Capturing Sentry event from {frame.filename}:{frame.lineno}")
                 return event
 
         # Error didn't originate from our module, drop it

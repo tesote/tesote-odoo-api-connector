@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Toggle between development and production logging modes
+
+if [ "$1" = "dev" ]; then
+    echo "Switching to DEVELOPMENT mode (verbose logs)..."
+    sed -i.bak 's/ODOO_ENV=production/ODOO_ENV=development/' docker-compose.yml
+    # Sobrescribe cualquier variante de `command: odoo ...` con el comando dev actual
+    sed -i.bak 's/^ *command: odoo.*/command: odoo --dev=all --log-level=debug --workers=0/' docker-compose.yml
+    echo "✓ Mode: DEVELOPMENT"
+    echo "  - Detailed request/response bodies in console"
+    echo "  - Rate limit information shown"
+    echo "  - Full sync details displayed"
+
+elif [ "$1" = "prod" ]; then
+    echo "Switching to PRODUCTION mode (minimal logs)..."
+    sed -i.bak 's/ODOO_ENV=development/ODOO_ENV=production/' docker-compose.yml
+    # Cualquier línea que empiece con `command: odoo` pasa a ser un comando limpio
+    sed -i.bak 's/^ *command: odoo .*/command: odoo/' docker-compose.yml
+    echo "✓ Mode: PRODUCTION"
+else
+    echo "Usage: $0 dev|prod" >&2
+    exit 1
+fi
+    echo "  - Only high-level summaries in console"
+    echo "  - Full details captured in Sentry breadcrumbs"
+
+else
+    echo "Usage: ./bin/toggle-log-mode [dev|prod]"
+    echo ""
+    echo "Current settings:"
+    grep "ODOO_ENV" docker-compose.yml | head -1
+    grep "command: odoo" docker-compose.yml | head -1
+    exit 1
+fi
+
+echo ""
+echo "Restart Odoo to apply changes:"
+echo "  ./bin/docker-dev restart"

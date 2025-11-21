@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# View Odoo logs with filtering options
+
+print_usage() {
+    echo "Usage: ./bin/view-logs [option]"
+    echo ""
+    echo "Options:"
+    echo "  all       - Show all Odoo logs (default)"
+    echo "  http      - Show only HTTP requests/responses"
+    echo "  errors    - Show only errors"
+    echo "  sync      - Show only sync operations"
+    echo "  follow    - Follow logs in real-time"
+    echo "  last N    - Show last N lines (e.g., 'last 100')"
+    echo ""
+    echo "Examples:"
+    echo "  ./bin/view-logs http           # Show HTTP logs"
+    echo "  ./bin/view-logs follow         # Follow logs in real-time"
+    echo "  ./bin/view-logs last 50        # Show last 50 lines"
+}
+
+CONTAINER_NAME="tesote_odoo"
+
+case "$1" in
+    http)
+        echo "📡 Showing HTTP request/response logs..."
+        docker logs "$CONTAINER_NAME" 2>&1 | grep -E "(📤 HTTP REQUEST|📥 HTTP RESPONSE|ERROR RESPONSE)" --color=always | tail -100
+        ;;
+
+    errors)
+        echo "❌ Showing error logs..."
+        docker logs "$CONTAINER_NAME" 2>&1 | grep -iE "(error|exception|failed|traceback)" --color=always | tail -100
+        ;;
+
+    sync)
+        echo "🔄 Showing sync operation logs..."
+        docker logs "$CONTAINER_NAME" 2>&1 | grep -E "(sync|Sync|SYNC)" --color=always | tail -100
+        ;;
+
+    follow)
+        echo "👀 Following logs in real-time (Ctrl+C to exit)..."
+        docker logs -f "$CONTAINER_NAME" 2>&1
+        ;;
+
+    last)
+        if [ -z "$2" ]; then
+            echo "Error: Please specify number of lines"
+            echo "Example: ./bin/view-logs last 100"
+            exit 1
+        fi
+        echo "📄 Showing last $2 lines..."
+        docker logs "$CONTAINER_NAME" 2>&1 | tail -n "$2"
+        ;;
+
+    all|"")
+        echo "📋 Showing all logs (last 100 lines)..."
+        docker logs "$CONTAINER_NAME" 2>&1 | tail -100
+        ;;
+
+    *)
+        print_usage
+        exit 1
+        ;;
+esac
+
+echo ""
+echo "💡 Tip: Use './bin/toggle-log-mode dev' for detailed request/response bodies"

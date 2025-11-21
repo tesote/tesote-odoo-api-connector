@@ -69,6 +69,7 @@
                 <field name="transaction_count"/>
                 <field name="sync_date"/>
                 <field name="active"/>
+                <field name="create_date"/>
                 <button name="import_transactions" type="object" string="Sync" icon="fa-sync"/>
             </list>
         </field>

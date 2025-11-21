@@ -1,6 +1,19 @@
 # Copyright 2024 tesote.com
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
 
+# Initialize debugger for development (must be before other imports)
+try:
+    from .utils.debugger import init_debugger
+
+    # Initialize debugger - will only activate if ENABLE_DEBUGPY=true in env
+    init_debugger(wait_for_attach=False, port=5678)
+except ImportError:
+    # debugpy not installed or running in test environment
+    pass
+except Exception:
+    # Don't let debugger initialization block module loading
+    pass
+
 # Initialize Sentry error tracking early (before other imports)
 try:
     from .utils import sentry_config

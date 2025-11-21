@@ -125,6 +125,7 @@ API Documentation: https://equipo.tesote.com/api/docs?version=v2
         "static/description/banner.png",
         "static/description/screenshot_1.png",
         "static/description/screenshot_2.png",
+        "static/description/icon.png",
     ],
     "installable": True,
     "application": True,

@@ -31,7 +31,6 @@
                         <group string="API Configuration">
                             <field name="api_url" placeholder="https://staging.tesote.com"/>
                             <field name="api_token" password="True" placeholder="Bearer token"/>
-                            <field name="rate_limit_tier" help="Your API tier determines rate limits"/>
                         </group>
                         <group string="Connection Status">
                             <field name="last_sync_date" readonly="1"/>
@@ -50,8 +49,6 @@
                             <group>
                                 <field name="auto_sync_enabled"/>
                                 <field name="sync_interval_hours" invisible="not auto_sync_enabled"/>
-                                <field name="last_account_import_date" readonly="1"/>
-                                <field name="last_transaction_sync_date" readonly="1"/>
                             </group>
                         </page>
                         <page string="Accounts">
