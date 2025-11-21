@@ -878,7 +878,6 @@ dependencies = [
     { name = "colorlog" },
     { name = "requests" },
     { name = "sentry-sdk" },
-    { name = "watchdog" },
 ]
 
 [package.dev-dependencies]
@@ -894,6 +893,7 @@ dev = [
     { name = "pytest-mock" },
     { name = "responses" },
     { name = "ruff" },
+    { name = "watchdog" },
 ]
 
 [package.metadata]
@@ -901,7 +901,6 @@ requires-dist = [
     { name = "colorlog", specifier = ">=6.8.0" },
     { name = "requests", specifier = ">=2.28.0" },
     { name = "sentry-sdk", specifier = ">=2.0.0" },
-    { name = "watchdog", specifier = ">=3.0.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -917,6 +916,7 @@ dev = [
     { name = "pytest-mock", specifier = ">=3.10.0" },
     { name = "responses", specifier = ">=0.22.0" },
     { name = "ruff", specifier = ">=0.8.0" },
+    { name = "watchdog", specifier = ">=3.0.0" },
 ]
 
 [[package]]

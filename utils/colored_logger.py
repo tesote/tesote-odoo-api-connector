@@ -192,20 +192,23 @@ class SentryHandler(logging.Handler):
         try:
             import sentry_sdk
 
+            # Extract extras and set them in scope
+            extras = self._extract_extras(record)
+            level = self._map_level(record.levelno)
+
             # If exc_info present, capture as exception
             if record.exc_info:
-                sentry_sdk.capture_exception(
-                    record.exc_info,
-                    level=self._map_level(record.levelno),
-                    extras=self._extract_extras(record),
-                )
+                exc_type, exc_value, exc_tb = record.exc_info
+                with sentry_sdk.push_scope() as scope:
+                    for key, value in extras.items():
+                        scope.set_extra(key, value)
+                    sentry_sdk.capture_exception(exc_value, level=level)
             else:
                 # Otherwise capture as message
-                sentry_sdk.capture_message(
-                    record.getMessage(),
-                    level=self._map_level(record.levelno),
-                    extras=self._extract_extras(record),
-                )
+                with sentry_sdk.push_scope() as scope:
+                    for key, value in extras.items():
+                        scope.set_extra(key, value)
+                    sentry_sdk.capture_message(record.getMessage(), level=level)
         except Exception:
             # Fail silently
             pass
