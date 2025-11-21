@@ -67,6 +67,32 @@ source .venv/bin/activate
 pre-commit install
 ```
 
+### Hot Code Reloading (Docker Development)
+
+This project enables automatic Python code reloading during development using Odoo's `--dev=all` mode with watchdog.
+
+**How it works:**
+- Docker container runs with `--dev=all` flag (configured in `docker-compose.yml`)
+- `watchdog` library monitors file changes in the volume-mounted module
+- Python files auto-reload on save without container restart
+
+**What auto-reloads:**
+- ✓ Python files: `components/*.py`, `models/*.py`, `controllers/*.py`
+- ✓ Changes apply immediately after save
+
+**What requires manual reload:**
+- ✗ XML views/data: Run `./bin/docker-dev install` to upgrade module
+- ✗ Manifest changes: Restart container with `./bin/docker-dev restart`
+- ✗ New Python files: Restart container for Odoo to discover them
+
+**Development workflow:**
+```bash
+# Before (without hot reload): Edit → Restart (30-60s) → Test
+# After (with hot reload): Edit → Save → Test immediately
+```
+
+**Note:** Hot reload only active in development mode (--dev=all flag). Production deployments are unaffected.
+
 ### Development Tools
 
 **Linting & Formatting**:

@@ -8,6 +8,7 @@ dependencies = [
     "requests>=2.28.0",
     "sentry-sdk>=2.0.0",
     "colorlog>=6.8.0",  # Colored logging for better readability
+    "watchdog>=3.0.0",  # File system monitoring for hot code reload in dev mode
 ]
 
 [dependency-groups]
