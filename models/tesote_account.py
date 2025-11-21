@@ -248,9 +248,16 @@ class TesoteAccount(models.Model):
         # Set currency if available - check nested data first
         currency_code = nested_data.get("currency") or data.get("currency")
         if currency_code:
-            currency = self.env["res.currency"].search([("name", "=", currency_code)], limit=1)
+            # Search including inactive currencies
+            currency = self.env["res.currency"].with_context(active_test=False).search(
+                [("name", "=", currency_code)], limit=1
+            )
             if currency:
                 vals["currency_id"] = currency.id
+                # Auto-activate currency for invoicing if it's inactive
+                if not currency.active:
+                    currency.active = True
+                    _logger.info(f"Auto-activated currency {currency_code} for invoicing")
 
         return self.create(vals)
 
@@ -312,8 +319,15 @@ class TesoteAccount(models.Model):
         # Update currency if available - check nested data first
         currency_code = nested_data.get("currency") or data.get("currency")
         if currency_code:
-            currency = self.env["res.currency"].search([("name", "=", currency_code)], limit=1)
+            # Search including inactive currencies
+            currency = self.env["res.currency"].with_context(active_test=False).search(
+                [("name", "=", currency_code)], limit=1
+            )
             if currency:
                 vals["currency_id"] = currency.id
+                # Auto-activate currency for invoicing if it's inactive
+                if not currency.active:
+                    currency.active = True
+                    _logger.info(f"Auto-activated currency {currency_code} for invoicing")
 
         self.write(vals)

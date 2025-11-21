@@ -14,3 +14,4 @@ from . import tesote_webhook_event  # noqa: F401
 from . import tesote_webhook_event_type  # noqa: F401
 from . import tesote_webhook_monitor  # noqa: F401
 from . import tesote_webhook_secret_wizard  # noqa: F401
+from . import res_currency  # noqa: F401 - Currency extension for auto-activation
