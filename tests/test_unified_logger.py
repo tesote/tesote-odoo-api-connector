@@ -361,7 +361,7 @@ class TestSentryIntegration:
 
             # Sentry should be called (if handler implemented correctly)
             # This will fail in RED phase, pass in GREEN phase
-            assert mock_capture.called or True  # Placeholder for now
+            assert True  # Placeholder for now
 
     @patch("sentry_sdk.capture_exception")
     def test_logger_error_with_exc_info_captures_exception(self, mock_capture):
@@ -379,7 +379,7 @@ class TestSentryIntegration:
                 logger.error("Caught exception", exc_info=True)
 
             # Should capture exception (when implemented)
-            assert mock_capture.called or True  # Placeholder
+            assert True  # Placeholder
 
     def test_logger_error_not_sent_to_sentry_in_development(self):
         """Test errors NOT sent to Sentry in development mode."""

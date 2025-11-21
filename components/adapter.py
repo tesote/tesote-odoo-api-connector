@@ -12,7 +12,6 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
-
 from odoo.exceptions import UserError
 
 # Handle both package and direct imports for testing
