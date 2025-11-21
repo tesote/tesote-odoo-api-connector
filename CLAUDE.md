@@ -179,6 +179,7 @@ This allows running tests in any Python environment without Odoo installation.
 5. **Singleton Backend** - Only one backend configuration allowed
 6. **Date Handling** - Convert ISO dates with timezone to Odoo format
 7. **Webhook Security** - Always verify HMAC-SHA256 signatures and check idempotency
+8. **File Size Limit** - Keep files under 500 LOC when possible. If a file exceeds 500 lines, split into smaller modules using OOP principles. Only exceed this limit when splitting would create unnecessary complexity.
 
 ## Internationalization (i18n)
 

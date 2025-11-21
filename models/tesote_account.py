@@ -6,12 +6,17 @@ Tesote Account Model.
 Represents financial accounts synchronized from Tesote API.
 """
 
-import logging
 from datetime import datetime
 
 from odoo import _, api, fields, models
 
-_logger = logging.getLogger(__name__)
+# Handle both package and direct imports for testing
+try:
+    from ..utils.colored_logger import get_logger
+except ImportError:
+    from utils.colored_logger import get_logger
+
+_logger = get_logger(__name__, category="sync")
 
 
 class TesoteAccount(models.Model):

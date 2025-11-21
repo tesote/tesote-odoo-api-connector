@@ -6,9 +6,13 @@ Tesote Binder.
 Maps Tesote IDs to Odoo IDs following SOLID principles.
 """
 
-import logging
+# Handle both package and direct imports for testing
+try:
+    from ..utils.colored_logger import get_logger
+except ImportError:
+    from utils.colored_logger import get_logger
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger(__name__, category="sync")
 
 
 class TesoteBinder:
