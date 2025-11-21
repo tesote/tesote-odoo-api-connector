@@ -61,7 +61,8 @@ class ResCurrency(models.Model):
             "tag": "display_notification",
             "params": {
                 "title": _("Currency Activated"),
-                "message": _("Currency %s has been activated for invoicing.") % ", ".join(self.mapped("name")),
+                "message": _("Currency %s has been activated for invoicing.")
+                % ", ".join(self.mapped("name")),
                 "type": "success",
                 "sticky": False,
             },
@@ -88,7 +89,8 @@ class ResCurrency(models.Model):
             "tag": "display_notification",
             "params": {
                 "title": _("Currency Deactivated"),
-                "message": _("Currency %s has been deactivated.") % ", ".join(to_deactivate.mapped("name")),
+                "message": _("Currency %s has been deactivated.")
+                % ", ".join(to_deactivate.mapped("name")),
                 "type": "success",
                 "sticky": False,
             },
@@ -123,10 +125,12 @@ class ResCurrency(models.Model):
         # Find inactive currencies that need activation
         # Use with_context to include inactive records in search
         all_tesote_currency_names = tesote_currencies.mapped("name")
-        inactive_currencies = self.with_context(active_test=False).search([
-            ("name", "in", all_tesote_currency_names),
-            ("active", "=", False),
-        ])
+        inactive_currencies = self.with_context(active_test=False).search(
+            [
+                ("name", "in", all_tesote_currency_names),
+                ("active", "=", False),
+            ]
+        )
 
         if inactive_currencies:
             inactive_currencies.write({"active": True})
@@ -138,7 +142,8 @@ class ResCurrency(models.Model):
                 "tag": "display_notification",
                 "params": {
                     "title": _("Currencies Activated"),
-                    "message": _("Activated %d currencies: %s") % (
+                    "message": _("Activated %d currencies: %s")
+                    % (
                         len(inactive_currencies),
                         ", ".join(activated_names),
                     ),
@@ -178,9 +183,11 @@ class ResCurrency(models.Model):
             }
 
         # Get all currencies (including inactive) that match
-        all_currencies = self.with_context(active_test=False).search([
-            ("id", "in", currency_ids),
-        ])
+        all_currencies = self.with_context(active_test=False).search(
+            [
+                ("id", "in", currency_ids),
+            ]
+        )
 
         active_currencies = all_currencies.filtered(lambda c: c.active)
         inactive_currencies = all_currencies.filtered(lambda c: not c.active)

@@ -131,3 +131,4 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # unused imports in __init__.py
 "tests/*" = ["N802", "N806"]  # naming conventions relaxed in tests
+"utils/debugger.py" = ["UP038"]  # isinstance pattern is fine for this utility

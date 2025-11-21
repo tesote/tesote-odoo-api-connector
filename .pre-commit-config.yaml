@@ -9,6 +9,7 @@ repos:
       - id: check-json
       - id: check-merge-conflict
       - id: debug-statements
+        exclude: ^utils/debugger\.py$  # breakpoint() calls are intentional here
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.4

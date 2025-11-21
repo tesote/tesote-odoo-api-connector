@@ -7,7 +7,7 @@ Test currency activation feature for Tesote connector.
 Tests the automatic and manual activation of currencies used by Tesote accounts.
 """
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 import pytest
 

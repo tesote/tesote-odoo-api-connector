@@ -249,8 +249,10 @@ class TesoteAccount(models.Model):
         currency_code = nested_data.get("currency") or data.get("currency")
         if currency_code:
             # Search including inactive currencies
-            currency = self.env["res.currency"].with_context(active_test=False).search(
-                [("name", "=", currency_code)], limit=1
+            currency = (
+                self.env["res.currency"]
+                .with_context(active_test=False)
+                .search([("name", "=", currency_code)], limit=1)
             )
             if currency:
                 vals["currency_id"] = currency.id
@@ -320,8 +322,10 @@ class TesoteAccount(models.Model):
         currency_code = nested_data.get("currency") or data.get("currency")
         if currency_code:
             # Search including inactive currencies
-            currency = self.env["res.currency"].with_context(active_test=False).search(
-                [("name", "=", currency_code)], limit=1
+            currency = (
+                self.env["res.currency"]
+                .with_context(active_test=False)
+                .search([("name", "=", currency_code)], limit=1)
             )
             if currency:
                 vals["currency_id"] = currency.id
