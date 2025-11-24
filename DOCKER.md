@@ -193,6 +193,46 @@ ports:
   - "8070:8069"  # Change to different port
 ```
 
+## Odoo Enterprise Addons (Optional)
+
+If you have access to Odoo Enterprise, you can add enterprise modules to your local development environment.
+
+### Download Enterprise Addons
+
+You need an Odoo.com account with enterprise access. Run the setup script:
+
+```bash
+./bin/setup-enterprise
+```
+
+Or download manually:
+
+```bash
+# Clone the enterprise repository (requires Odoo.com credentials)
+git clone https://github.com/odoo/enterprise.git ~/odoo/enterprise-18.0 --branch 18.0 --depth 1
+```
+
+> **Note:** The enterprise repository is private. You need to be logged into GitHub with an account that has access to the Odoo enterprise repository.
+
+### Configure Enterprise Path
+
+Add your enterprise path to `.env` (this file is gitignored):
+
+```bash
+# In .env file
+ENTERPRISE_PATH=/Users/yourname/odoo/enterprise-18.0
+```
+
+### Apply Changes
+
+Restart the environment to mount the enterprise addons:
+
+```bash
+docker compose down && docker compose up -d
+```
+
+Enterprise modules will now appear in the Apps list.
+
 ## Advanced Usage
 
 ### Running SQL queries
