@@ -48,17 +48,30 @@ INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
 # Check if directory already exists
 if [ -d "$INSTALL_PATH" ]; then
     print_info "Directory already exists: $INSTALL_PATH"
+
+    # Validate it's a git repository
+    if [ ! -d "$INSTALL_PATH/.git" ]; then
+        print_error "Directory exists but is not a git repository: $INSTALL_PATH"
+        print_info "Please remove it or choose a different path."
+        exit 1
+    fi
+
     read -p "Update existing installation? (y/N) " -n 1 -r
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Updating enterprise addons..."
-        cd "$INSTALL_PATH" && git pull
+        if ! cd "$INSTALL_PATH"; then
+            print_error "Failed to access directory: $INSTALL_PATH"
+            exit 1
+        fi
+        git pull
         if [ $? -eq 0 ]; then
             print_success "Enterprise addons updated!"
         else
-            print_error "Failed to update. Check your credentials."
+            print_error "Failed to update. Check your credentials and network connection."
             exit 1
         fi
+        cd - > /dev/null
     else
         print_info "Skipping download."
     fi
