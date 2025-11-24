@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_header() {
+    echo -e "${BLUE}================================================${NC}"
+    echo -e "${BLUE}    Odoo Enterprise Addons Setup                ${NC}"
+    echo -e "${BLUE}================================================${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+}
+
+print_info() {
+    echo -e "${YELLOW}ℹ${NC} $1"
+}
+
+# Default path
+DEFAULT_PATH="$HOME/odoo/enterprise-18.0"
+BRANCH="18.0"
+REPO_URL="https://github.com/odoo/enterprise.git"
+
+print_header
+echo ""
+
+# Check if git is available
+if ! command -v git &> /dev/null; then
+    print_error "Git is not installed. Please install git first."
+    exit 1
+fi
+
+# Ask for installation path
+print_info "Where do you want to install Odoo Enterprise addons?"
+echo ""
+read -p "Path [$DEFAULT_PATH]: " INSTALL_PATH
+INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
+
+# Check if directory already exists
+if [ -d "$INSTALL_PATH" ]; then
+    print_info "Directory already exists: $INSTALL_PATH"
+    read -p "Update existing installation? (y/N) " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        print_info "Updating enterprise addons..."
+        cd "$INSTALL_PATH" && git pull
+        if [ $? -eq 0 ]; then
+            print_success "Enterprise addons updated!"
+        else
+            print_error "Failed to update. Check your credentials."
+            exit 1
+        fi
+    else
+        print_info "Skipping download."
+    fi
+else
+    # Create parent directory if needed
+    mkdir -p "$(dirname "$INSTALL_PATH")"
+
+    print_info "Cloning Odoo Enterprise (branch $BRANCH)..."
+    print_info "You may be prompted for your GitHub credentials."
+    echo ""
+
+    git clone "$REPO_URL" "$INSTALL_PATH" --branch "$BRANCH" --depth 1
+
+    if [ $? -eq 0 ]; then
+        print_success "Enterprise addons downloaded!"
+    else
+        print_error "Failed to clone. Make sure you have access to the Odoo enterprise repository."
+        print_info "You need a GitHub account linked to an Odoo.com account with enterprise access."
+        exit 1
+    fi
+fi
+
+echo ""
+
+# Update .env file
+ENV_FILE=".env"
+if [ -f "$ENV_FILE" ]; then
+    # Check if ENTERPRISE_PATH already exists
+    if grep -q "^ENTERPRISE_PATH=" "$ENV_FILE"; then
+        print_info "ENTERPRISE_PATH already set in .env"
+        read -p "Update to new path? (y/N) " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            sed -i.bak "s|^ENTERPRISE_PATH=.*|ENTERPRISE_PATH=$INSTALL_PATH|" "$ENV_FILE"
+            rm -f "$ENV_FILE.bak"
+            print_success "Updated ENTERPRISE_PATH in .env"
+        fi
+    elif grep -q "^#.*ENTERPRISE_PATH=" "$ENV_FILE"; then
+        # Uncomment and set the path
+        sed -i.bak "s|^#.*ENTERPRISE_PATH=.*|ENTERPRISE_PATH=$INSTALL_PATH|" "$ENV_FILE"
+        rm -f "$ENV_FILE.bak"
+        print_success "Enabled ENTERPRISE_PATH in .env"
+    else
+        # Add new line
+        echo "ENTERPRISE_PATH=$INSTALL_PATH" >> "$ENV_FILE"
+        print_success "Added ENTERPRISE_PATH to .env"
+    fi
+else
+    print_error ".env file not found"
+fi
+
+echo ""
+print_success "Setup complete!"
+echo ""
+print_info "Next steps:"
+echo "  1. Restart Docker: docker compose down && docker compose up -d"
+echo "  2. Enterprise modules will appear in the Apps list"
+echo ""
