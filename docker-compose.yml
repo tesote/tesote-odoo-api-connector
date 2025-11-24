@@ -45,6 +45,8 @@ services:
       - odoo_filestore:/var/lib/odoo
       # Backups
       - ./backups:/mnt/backups
+      # Enterprise addons (optional - set ENTERPRISE_PATH in .env)
+      - ${ENTERPRISE_PATH:-/dev/null}:/mnt/enterprise:ro
     command: odoo --dev=all --log-level=debug --workers=0
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
