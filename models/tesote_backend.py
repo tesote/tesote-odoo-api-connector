@@ -6,13 +6,18 @@ Tesote Backend Model.
 Manages connection configuration and authentication to Tesote API.
 """
 
-import logging
 import threading
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-_logger = logging.getLogger(__name__)
+# Handle both package and direct imports for testing
+try:
+    from ..utils.colored_logger import get_logger
+except ImportError:
+    from utils.colored_logger import get_logger
+
+_logger = get_logger(__name__, category="sync")
 
 
 class TesoteBackend(models.Model):

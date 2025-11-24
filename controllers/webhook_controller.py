@@ -1,11 +1,16 @@
 import json
-import logging
 from datetime import datetime
 
 from odoo import http
 from odoo.http import request
 
-_logger = logging.getLogger(__name__)
+# Handle both package and direct imports for testing
+try:
+    from ..utils.colored_logger import get_logger
+except ImportError:
+    from utils.colored_logger import get_logger
+
+_logger = get_logger(__name__, category="webhook")
 
 
 class TesoteWebhookController(http.Controller):

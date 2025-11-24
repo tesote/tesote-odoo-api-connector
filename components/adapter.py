@@ -6,7 +6,6 @@ Tesote API Adapter.
 Implements communication with Tesote API v2.0.0 following SOLID principles.
 """
 
-import logging
 import os
 import time
 from typing import Any
@@ -15,7 +14,13 @@ from urllib.parse import urljoin
 import requests
 from odoo.exceptions import UserError
 
-_logger = logging.getLogger(__name__)
+# Handle both package and direct imports for testing
+try:
+    from ..utils.colored_logger import get_logger
+except ImportError:
+    from utils.colored_logger import get_logger
+
+_logger = get_logger(__name__, category="http")
 
 # Try to import Sentry for breadcrumb tracking
 try:
@@ -124,9 +129,11 @@ def _add_http_breadcrumb(
         sentry_sdk.add_breadcrumb(
             category="http",
             level="info",
-            message=f"Tesote API {breadcrumb_type.upper()}: {method} {url}"
-            if method and url
-            else f"Tesote API {breadcrumb_type.upper()}",
+            message=(
+                f"Tesote API {breadcrumb_type.upper()}: {method} {url}"
+                if method and url
+                else f"Tesote API {breadcrumb_type.upper()}"
+            ),
             data=data,
         )
 

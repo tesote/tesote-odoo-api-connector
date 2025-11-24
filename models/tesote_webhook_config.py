@@ -1,13 +1,18 @@
 import hashlib
 import hmac
-import logging
 import secrets
 from urllib.parse import urljoin
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-_logger = logging.getLogger(__name__)
+# Handle both package and direct imports for testing
+try:
+    from ..utils.colored_logger import get_logger
+except ImportError:
+    from utils.colored_logger import get_logger
+
+_logger = get_logger(__name__, category="webhook")
 
 
 class TesoteWebhookConfig(models.Model):

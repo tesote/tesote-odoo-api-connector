@@ -43,9 +43,13 @@ def post_init_hook(env):
     Args:
         env: Odoo environment (Odoo 18.0+ signature)
     """
-    import logging
+    # Handle both package and direct imports for testing
+    try:
+        from .utils.colored_logger import get_logger
+    except ImportError:
+        from utils.colored_logger import get_logger
 
-    _logger = logging.getLogger(__name__)
+    _logger = get_logger(__name__)
 
     _logger.info("Running tesote_connector post-initialization")
 
@@ -74,9 +78,13 @@ def pre_uninstall_hook(env):
     Args:
         env: Odoo environment (Odoo 18.0+ signature)
     """
-    import logging
+    # Handle both package and direct imports for testing
+    try:
+        from .utils.colored_logger import get_logger
+    except ImportError:
+        from utils.colored_logger import get_logger
 
-    _logger = logging.getLogger(__name__)
+    _logger = get_logger(__name__)
 
     cr = env.cr
 
