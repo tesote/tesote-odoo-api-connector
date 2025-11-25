@@ -30,6 +30,11 @@ DEFAULT_PATH="$HOME/odoo/enterprise-18.0"
 BRANCH="18.0"
 REPO_URL="https://github.com/odoo/enterprise.git"
 
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+SIBLING_ENTERPRISE="$(dirname "$PROJECT_DIR")/enterprise"
+
 print_header
 echo ""
 
@@ -39,11 +44,91 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
-# Ask for installation path
-print_info "Where do you want to install Odoo Enterprise addons?"
-echo ""
-read -p "Path [$DEFAULT_PATH]: " INSTALL_PATH
-INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
+# Check for enterprise folder as sibling directory
+if [ -d "$SIBLING_ENTERPRISE" ] && [ -d "$SIBLING_ENTERPRISE/.git" ]; then
+    print_success "Found enterprise folder at sibling directory: $SIBLING_ENTERPRISE"
+
+    # Verify it's the Odoo enterprise repo
+    cd "$SIBLING_ENTERPRISE"
+    REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
+    CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+    cd - > /dev/null
+
+    if [[ "$REMOTE_URL" == *"odoo/enterprise"* ]] && [[ "$CURRENT_BRANCH" == "$BRANCH" ]]; then
+        print_success "Valid Odoo Enterprise repository on branch $BRANCH"
+        read -p "Use this path? (Y/n) " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            INSTALL_PATH="$SIBLING_ENTERPRISE"
+            print_info "Using sibling enterprise directory"
+        else
+            print_info "Choose a different path below"
+
+            while true; do
+                read -p "Enter path (or press Enter for default) [$DEFAULT_PATH]: " INSTALL_PATH
+                INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
+                if [ ${#INSTALL_PATH} -eq 1 ]; then
+                    print_error "Invalid path. Single character paths are not allowed."
+                    echo ""
+                    continue
+                fi
+                break
+            done
+        fi
+    else
+        print_error "Found directory at $SIBLING_ENTERPRISE but it's not a valid Odoo Enterprise repo"
+        print_info "Expected: odoo/enterprise repository (branch $BRANCH)"
+        print_info "Found: $REMOTE_URL (branch $CURRENT_BRANCH)"
+        echo ""
+        print_info "Choose installation path below"
+
+        while true; do
+            read -p "Enter path (or press Enter for default) [$DEFAULT_PATH]: " INSTALL_PATH
+            INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
+            if [ ${#INSTALL_PATH} -eq 1 ]; then
+                print_error "Invalid path. Single character paths are not allowed."
+                echo ""
+                continue
+            fi
+            break
+        done
+    fi
+elif [ -d "$SIBLING_ENTERPRISE" ]; then
+    print_error "Found directory at $SIBLING_ENTERPRISE but it's not a git repository"
+    echo ""
+    print_info "Choose installation path below"
+
+    while true; do
+        read -p "Enter path (or press Enter for default) [$DEFAULT_PATH]: " INSTALL_PATH
+        INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
+        if [ ${#INSTALL_PATH} -eq 1 ]; then
+            print_error "Invalid path. Single character paths are not allowed."
+            echo ""
+            continue
+        fi
+        break
+    done
+else
+    print_error "Could not find enterprise Odoo at sibling directory: $SIBLING_ENTERPRISE"
+    echo ""
+    print_info "Where do you want to install Odoo Enterprise addons?"
+    echo ""
+
+    # Loop until we get a valid path
+    while true; do
+        read -p "Enter path (or press Enter for default) [$DEFAULT_PATH]: " INSTALL_PATH
+        INSTALL_PATH="${INSTALL_PATH:-$DEFAULT_PATH}"
+
+        # Validate path isn't a single character (common mistake: Y/N/y/n)
+        if [ ${#INSTALL_PATH} -eq 1 ]; then
+            print_error "Invalid path. Single character paths are not allowed."
+            echo ""
+            continue
+        fi
+
+        break
+    done
+fi
 
 # Check if directory already exists
 if [ -d "$INSTALL_PATH" ]; then
