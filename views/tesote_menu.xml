@@ -22,6 +22,14 @@
         action="action_tesote_backend_open"
         sequence="10"/>
 
+    <!-- Account Mapping Menu -->
+    <menuitem
+        id="menu_tesote_account_mapping"
+        name="Account Mapping"
+        parent="menu_tesote_configuration"
+        action="action_tesote_account_mapping"
+        sequence="15"/>
+
     <!-- Sync Logs Menu -->
     <menuitem
         id="menu_tesote_sync_log"
