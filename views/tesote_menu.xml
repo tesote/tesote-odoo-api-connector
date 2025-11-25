@@ -28,7 +28,8 @@
         name="Account Mapping"
         parent="menu_tesote_configuration"
         action="action_tesote_account_mapping"
-        sequence="15"/>
+        sequence="15"
+        groups="account.group_account_manager"/>
 
     <!-- Sync Logs Menu -->
     <menuitem
