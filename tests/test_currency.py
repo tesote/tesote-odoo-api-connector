@@ -153,7 +153,7 @@ class TestCurrencyActivationIntegration:
         backend.account_ids.mapped = Mock(return_value=Mock(ids=[1, 2]))
         return backend
 
-    def test_currency_activation_workflow(self, mock_currency, mock_env):
+    def test_currency_activation_workflow(self, mock_currency):
         """Test that currency can be activated."""
         from models.res_currency import ResCurrency
 
@@ -169,15 +169,12 @@ class TestCurrencyActivationIntegration:
         currencies.write({"active": True})
         currencies.write.assert_called_with({"active": True})
 
-    def test_currency_auto_activation_on_account_import(self, mock_currency, mock_env):
+    def test_currency_auto_activation_on_account_import(self, mock_currency):
         """Test that currency is auto-activated when account is imported."""
         # This tests the logic flow where:
         # 1. Account is created from API data with currency="EUR"
         # 2. Currency is found in database (but inactive)
         # 3. Currency is automatically activated
-
-        # Mock currency search to return inactive currency
-        mock_env["res.currency"].with_context.return_value.search.return_value = mock_currency
 
         # Verify the mock setup
         assert mock_currency.active is False
@@ -186,7 +183,7 @@ class TestCurrencyActivationIntegration:
         mock_currency.active = True
         assert mock_currency.active is True
 
-    def test_backend_view_currencies_returns_action(self, mock_backend, mock_env):
+    def test_backend_view_currencies_returns_action(self, mock_backend):
         """Test that action_view_tesote_currencies returns proper action."""
         from models.tesote_backend import TesoteBackend
 
