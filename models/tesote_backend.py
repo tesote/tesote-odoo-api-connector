@@ -924,3 +924,55 @@ class TesoteBackend(models.Model):
     def _scheduler_import_transactions(self):
         """Legacy scheduled job - use _scheduler_sync_transactions instead."""
         return self._scheduler_sync_transactions()
+
+    def action_activate_currencies(self):
+        """
+        Activate all currencies used by Tesote accounts.
+
+        This ensures all currencies from synced accounts are available
+        for use in invoicing and other accounting operations.
+        """
+        self.ensure_one()
+        return self.env["res.currency"].activate_tesote_currencies()
+
+    def action_view_tesote_currencies(self):
+        """
+        Open a view showing currencies used by Tesote accounts.
+
+        Shows both active and inactive currencies with their status.
+        """
+        self.ensure_one()
+
+        # Get currencies used by Tesote accounts
+        tesote_currency_ids = self.account_ids.mapped("currency_id").ids
+
+        if not tesote_currency_ids:
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": _("No Currencies"),
+                    "message": _("No currencies found in Tesote accounts. Import accounts first."),
+                    "type": "warning",
+                    "sticky": False,
+                },
+            }
+
+        return {
+            "name": _("Tesote Account Currencies"),
+            "type": "ir.actions.act_window",
+            "res_model": "res.currency",
+            "view_mode": "list,form",
+            "domain": [("id", "in", tesote_currency_ids)],
+            "context": {"active_test": False},  # Show inactive currencies too
+        }
+
+    def get_currency_status(self):
+        """
+        Get currency activation status for display in UI.
+
+        Returns:
+            dict: Summary of active/inactive currencies
+        """
+        self.ensure_one()
+        return self.env["res.currency"].get_tesote_currency_summary()

@@ -22,6 +22,9 @@
                         <button class="oe_stat_button" type="object" name="action_view_sync_logs" icon="fa-history">
                             <field string="Sync Logs" name="sync_log_count" widget="statinfo"/>
                         </button>
+                        <button class="oe_stat_button" type="object" name="action_view_tesote_currencies" icon="fa-money">
+                            <span class="o_stat_text">Currencies</span>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <h1>Tesote API Configuration</h1>
@@ -53,6 +56,18 @@
                         </page>
                         <page string="Accounts">
                             <field name="account_ids" readonly="1"/>
+                        </page>
+                        <page string="Currencies">
+                            <group>
+                                <div class="alert alert-info" role="alert">
+                                    <strong>Currency Management</strong>
+                                    <p>Currencies from Tesote accounts are automatically activated when accounts are imported. Use the buttons below to manage currencies manually.</p>
+                                </div>
+                            </group>
+                            <group>
+                                <button name="action_activate_currencies" type="object" string="Activate All Tesote Currencies" class="btn-primary" icon="fa-check-circle"/>
+                                <button name="action_view_tesote_currencies" type="object" string="View Tesote Currencies" class="btn-secondary" icon="fa-money"/>
+                            </group>
                         </page>
                         <page string="Technical" groups="base.group_no_one">
                             <group>
