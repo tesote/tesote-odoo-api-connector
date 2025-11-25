@@ -10,6 +10,7 @@ build/
 tmp/
 versions
 .debugging/
+.claude/settings.local.json
 
 # Virtual Environment
 venv/
