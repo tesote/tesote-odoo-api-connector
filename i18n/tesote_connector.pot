@@ -443,3 +443,50 @@ msgstr ""
 #: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_event_form
 msgid "Event Details"
 msgstr ""
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account__odoo_account_id
+msgid "Odoo Account"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.model.fields,help:tesote_connector.field_tesote_account__odoo_account_id
+msgid "Odoo accounting account linked to this Tesote account for journal entries"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.actions.act_window,name:tesote_connector.action_tesote_account_mapping
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_account_mapping
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
+msgid "Account Mapping"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Search Accounts to Map"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Not Mapped"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Mapped"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Bank"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
+msgid "All accounts are mapped!"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
+msgid "Link Tesote accounts to Odoo accounting accounts to enable journal entry creation."
+msgstr ""

@@ -89,6 +89,14 @@ class TesoteAccount(models.Model):
 
     active = fields.Boolean(string="Active", default=True)
 
+    # Link to Odoo accounting account
+    odoo_account_id = fields.Many2one(
+        "account.account",
+        string="Odoo Account",
+        help="Odoo accounting account linked to this Tesote account for journal entries",
+        domain="[('account_type', 'in', ['asset_cash', 'liability_credit_card', 'asset_current'])]",
+    )
+
     _sql_constraints = [
         (
             "tesote_id_backend_uniq",

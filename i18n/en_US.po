@@ -322,3 +322,50 @@ msgstr "Event Marked as Completed"
 #, python-format
 msgid "The webhook event has been manually marked as completed"
 msgstr "The webhook event has been manually marked as completed"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account__odoo_account_id
+msgid "Odoo Account"
+msgstr "Odoo Account"
+
+#. module: tesote_connector
+#: model:ir.model.fields,help:tesote_connector.field_tesote_account__odoo_account_id
+msgid "Odoo accounting account linked to this Tesote account for journal entries"
+msgstr "Odoo accounting account linked to this Tesote account for journal entries"
+
+#. module: tesote_connector
+#: model:ir.actions.act_window,name:tesote_connector.action_tesote_account_mapping
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_account_mapping
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
+msgid "Account Mapping"
+msgstr "Account Mapping"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Search Accounts to Map"
+msgstr "Search Accounts to Map"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Not Mapped"
+msgstr "Not Mapped"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Mapped"
+msgstr "Mapped"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_search
+msgid "Bank"
+msgstr "Bank"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
+msgid "All accounts are mapped!"
+msgstr "All accounts are mapped!"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
+msgid "Link Tesote accounts to Odoo accounting accounts to enable journal entry creation."
+msgstr "Link Tesote accounts to Odoo accounting accounts to enable journal entry creation."

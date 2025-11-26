@@ -112,6 +112,7 @@ API Documentation: https://equipo.tesote.com/api/docs?version=v2
         "data/webhook_monitoring_cron.xml",
         "views/tesote_backend_views.xml",
         "views/tesote_account_views.xml",
+        "views/tesote_account_mapping_views.xml",
         "views/tesote_transaction_views.xml",
         "views/tesote_sync_log_views.xml",
         "views/tesote_webhook_config_views.xml",

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================ -->
+    <!-- Account Mapping Views                        -->
+    <!-- Simple interface to link Tesote accounts     -->
+    <!-- to Odoo accounting accounts                  -->
+    <!-- ============================================ -->
+
+    <!-- Account Mapping Tree View (Editable) -->
+    <record id="view_tesote_account_mapping_tree" model="ir.ui.view">
+        <field name="name">tesote.account.mapping.tree</field>
+        <field name="model">tesote.account</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <list string="Account Mapping" editable="bottom" create="false" delete="false">
+                <field name="name" readonly="1"/>
+                <field name="tesote_id" readonly="1"/>
+                <field name="bank_name" readonly="1"/>
+                <field name="balance" readonly="1"/>
+                <field name="currency_id" readonly="1"/>
+                <field name="odoo_account_id" options="{'no_create': True}"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Account Mapping Search View -->
+    <record id="view_tesote_account_mapping_search" model="ir.ui.view">
+        <field name="name">tesote.account.mapping.search</field>
+        <field name="model">tesote.account</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Search Accounts to Map">
+                <field name="name"/>
+                <field name="tesote_id"/>
+                <field name="bank_name"/>
+                <filter string="Not Mapped" name="not_mapped" domain="[('odoo_account_id', '=', False)]"/>
+                <filter string="Mapped" name="mapped" domain="[('odoo_account_id', '!=', False)]"/>
+                <separator/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Bank" name="group_bank" context="{'group_by': 'bank_name'}"/>
+                    <filter string="Odoo Account" name="group_odoo_account" context="{'group_by': 'odoo_account_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Account Mapping Action -->
+    <record id="action_tesote_account_mapping" model="ir.actions.act_window">
+        <field name="name">Account Mapping</field>
+        <field name="res_model">tesote.account</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_tesote_account_mapping_tree"/>
+        <field name="search_view_id" ref="view_tesote_account_mapping_search"/>
+        <field name="context">{'search_default_active': 1, 'search_default_not_mapped': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                All accounts are mapped!
+            </p>
+            <p>
+                Link Tesote accounts to Odoo accounting accounts to enable journal entry creation.
+            </p>
+        </field>
+    </record>
+</odoo>
