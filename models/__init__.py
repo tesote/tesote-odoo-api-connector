@@ -1,11 +1,12 @@
 # Copyright 2024 tesote.com
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
 
+# isort: skip_file
 # ruff: noqa: I001
 # Import order is critical for Odoo model inheritance
 # tesote_binding MUST be imported before models that inherit from it
-from . import tesote_binding  # noqa: F401 - Base model MUST be imported FIRST
-from . import res_currency  # noqa: F401 - Currency extension for auto-activation
+from . import tesote_binding  # noqa: F401 - Base model, import FIRST
+from . import res_currency  # noqa: F401
 from . import tesote_account  # noqa: F401 - Inherits from tesote_binding
 from . import tesote_backend  # noqa: F401
 from . import tesote_sync_log  # noqa: F401

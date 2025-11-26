@@ -1,5 +1,6 @@
 # Copyright 2024 tesote.com
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
+# ruff: noqa: I001
 
 """
 Tesote API Adapter.
