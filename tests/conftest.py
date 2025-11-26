@@ -98,8 +98,10 @@ sys.modules["odoo"].http = MockHttp()
 
 
 # Mock the translation function
-def mock_translate(text):
-    """Mock translation function."""
+def mock_translate(text, **kwargs):
+    """Mock translation function with keyword argument support."""
+    if kwargs:
+        return text % kwargs
     return text
 
 

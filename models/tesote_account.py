@@ -168,6 +168,174 @@ class TesoteAccount(models.Model):
             },
         }
 
+    def sync_balance_to_odoo(self):
+        """
+        Sync Tesote account balance to linked Odoo account.
+
+        Creates an adjustment journal entry if there's a difference between
+        the Tesote balance and the Odoo account balance.
+
+        Returns:
+            account.move record if adjustment was created, False otherwise
+        """
+        self.ensure_one()
+
+        # Check if account is mapped to Odoo
+        if not self.odoo_account_id:
+            _logger.debug(f"Account {self.name} not mapped to Odoo account, skipping balance sync")
+            return False
+
+        # Check if suspense account is configured
+        if not self.backend_id.suspense_account_id:
+            _logger.warning(
+                f"Suspense account not configured on backend, "
+                f"skipping balance sync for {self.name}"
+            )
+            return False
+
+        # Get current Odoo account balance (sum of debits - credits)
+        odoo_balance = self.odoo_account_id.current_balance or 0.0
+
+        # Get Tesote balance (already stored on this record)
+        tesote_balance = self.balance or 0.0
+
+        # Calculate difference
+        difference = tesote_balance - odoo_balance
+
+        # Skip if no difference (within small tolerance for floating point)
+        if abs(difference) < 0.01:
+            _logger.debug(
+                f"Account {self.name} balance already matches: "
+                f"Tesote={tesote_balance}, Odoo={odoo_balance}"
+            )
+            return False
+
+        _logger.info(
+            f"Creating balance adjustment for {self.name}: "
+            f"Tesote={tesote_balance}, Odoo={odoo_balance}, Adjustment={difference}"
+        )
+
+        # Create adjustment journal entry
+        return self._create_balance_adjustment(difference)
+
+    def _create_balance_adjustment(self, amount):
+        """
+        Create a journal entry to adjust the Odoo account balance.
+
+        Args:
+            amount: The adjustment amount (positive = increase, negative = decrease)
+
+        Returns:
+            Created account.move record
+        """
+        self.ensure_one()
+
+        # Get or create journal for adjustments
+        journal = self._get_adjustment_journal()
+
+        # Prepare move values
+        move_vals = {
+            "journal_id": journal.id,
+            "date": fields.Date.today(),
+            "ref": f"TESOTE-BAL-{self.tesote_id}",
+            "narration": _(
+                "Balance adjustment for Tesote account %(account)s",
+                account=self.name,
+            ),
+        }
+
+        # Create move lines
+        bank_account = self.odoo_account_id
+        suspense_account = self.backend_id.suspense_account_id
+
+        if amount > 0:
+            # Need to increase bank balance: Debit bank, Credit suspense
+            lines = [
+                (
+                    0,
+                    0,
+                    {
+                        "account_id": bank_account.id,
+                        "debit": abs(amount),
+                        "credit": 0,
+                        "name": _("Tesote balance adjustment"),
+                    },
+                ),
+                (
+                    0,
+                    0,
+                    {
+                        "account_id": suspense_account.id,
+                        "debit": 0,
+                        "credit": abs(amount),
+                        "name": _("Tesote balance adjustment"),
+                    },
+                ),
+            ]
+        else:
+            # Need to decrease bank balance: Credit bank, Debit suspense
+            lines = [
+                (
+                    0,
+                    0,
+                    {
+                        "account_id": bank_account.id,
+                        "debit": 0,
+                        "credit": abs(amount),
+                        "name": _("Tesote balance adjustment"),
+                    },
+                ),
+                (
+                    0,
+                    0,
+                    {
+                        "account_id": suspense_account.id,
+                        "debit": abs(amount),
+                        "credit": 0,
+                        "name": _("Tesote balance adjustment"),
+                    },
+                ),
+            ]
+
+        move_vals["line_ids"] = lines
+
+        # Create and post the journal entry
+        move = self.env["account.move"].create(move_vals)
+        move.action_post()
+
+        _logger.info(f"Created balance adjustment journal entry {move.name} for {self.name}")
+
+        return move
+
+    def _get_adjustment_journal(self):
+        """
+        Get or create journal for balance adjustments.
+
+        Returns:
+            account.journal record
+        """
+        journal = self.env["account.journal"].search(
+            [
+                ("type", "=", "general"),
+                ("company_id", "=", self.backend_id.company_id.id),
+                ("code", "=", "TSADJ"),
+            ],
+            limit=1,
+        )
+
+        if not journal:
+            journal = self.env["account.journal"].create(
+                {
+                    "name": "Tesote Adjustments",
+                    "code": "TSADJ",
+                    "type": "general",
+                    "company_id": self.backend_id.company_id.id,
+                }
+            )
+            _logger.info("Created Tesote Adjustments journal")
+
+        return journal
+
     @api.model
     def _parse_tesote_datetime(self, date_string):
         """
