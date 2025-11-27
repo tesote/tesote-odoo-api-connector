@@ -188,8 +188,7 @@ class TesoteAccount(models.Model):
         # Check if suspense account is configured
         if not self.backend_id.suspense_account_id:
             _logger.warning(
-                f"Suspense account not configured on backend, "
-                f"skipping balance sync for {self.name}"
+                f"Suspense account not configured on backend, skipping balance sync for {self.name}"
             )
             return False
 
