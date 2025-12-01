@@ -67,7 +67,7 @@ class TestSyncBalanceToOdoo:
         account.tesote_id = "acc_123"
         account.balance = 1000.0
         account.odoo_account_id = Mock()
-        account.odoo_account_id.current_balance = 800.0
+        account.odoo_account_id.id = 10
 
         # Set up matching currencies to pass currency validation
         usd_currency = Mock(id=1, name="USD")
@@ -81,6 +81,10 @@ class TestSyncBalanceToOdoo:
         account.backend_id = backend
 
         account.env = MagicMock()
+
+        # Default mock for _get_odoo_account_balance (returns 800.0 by default)
+        account._get_odoo_account_balance = Mock(return_value=800.0)
+
         return account
 
     def test_sync_balance_skips_unmapped_account(self, mock_account):
@@ -114,7 +118,7 @@ class TestSyncBalanceToOdoo:
         from models.tesote_account import TesoteAccount
 
         mock_account.balance = 1000.0
-        mock_account.odoo_account_id.current_balance = 1000.0
+        mock_account._get_odoo_account_balance = Mock(return_value=1000.0)
         mock_account.sync_balance_to_odoo = TesoteAccount.sync_balance_to_odoo.__get__(
             mock_account, TesoteAccount
         )
@@ -128,7 +132,7 @@ class TestSyncBalanceToOdoo:
         from models.tesote_account import TesoteAccount
 
         mock_account.balance = 1000.005
-        mock_account.odoo_account_id.current_balance = 1000.0
+        mock_account._get_odoo_account_balance = Mock(return_value=1000.0)
         mock_account.sync_balance_to_odoo = TesoteAccount.sync_balance_to_odoo.__get__(
             mock_account, TesoteAccount
         )
@@ -158,7 +162,7 @@ class TestSyncBalanceToOdoo:
         from models.tesote_account import TesoteAccount
 
         mock_account.balance = 1200.0
-        mock_account.odoo_account_id.current_balance = 1000.0
+        mock_account._get_odoo_account_balance = Mock(return_value=1000.0)
 
         mock_move = Mock()
         mock_account._create_balance_adjustment = Mock(return_value=mock_move)
@@ -177,7 +181,7 @@ class TestSyncBalanceToOdoo:
         from models.tesote_account import TesoteAccount
 
         mock_account.balance = 800.0
-        mock_account.odoo_account_id.current_balance = 1000.0
+        mock_account._get_odoo_account_balance = Mock(return_value=1000.0)
 
         mock_move = Mock()
         mock_account._create_balance_adjustment = Mock(return_value=mock_move)
@@ -190,6 +194,85 @@ class TestSyncBalanceToOdoo:
 
         mock_account._create_balance_adjustment.assert_called_once_with(-200.0)
         assert result == mock_move
+
+
+class TestGetOdooAccountBalance:
+    """Test _get_odoo_account_balance functionality."""
+
+    def test_get_odoo_account_balance_method_exists(self):
+        """Test that _get_odoo_account_balance method exists on account model."""
+        from models.tesote_account import TesoteAccount
+
+        assert hasattr(TesoteAccount, "_get_odoo_account_balance")
+        assert callable(TesoteAccount._get_odoo_account_balance)
+
+    def test_returns_zero_when_no_odoo_account(self):
+        """Test that method returns 0.0 when odoo_account_id is not set."""
+        from models.tesote_account import TesoteAccount
+
+        account = Mock(spec=TesoteAccount)
+        account.ensure_one = Mock()
+        account.odoo_account_id = False
+
+        account._get_odoo_account_balance = TesoteAccount._get_odoo_account_balance.__get__(
+            account, TesoteAccount
+        )
+
+        result = account._get_odoo_account_balance()
+
+        assert result == 0.0
+
+    def test_calculates_balance_from_move_lines(self):
+        """Test that balance is calculated from account.move.line entries."""
+        from models.tesote_account import TesoteAccount
+
+        account = Mock(spec=TesoteAccount)
+        account.ensure_one = Mock()
+        account.odoo_account_id = Mock(id=10)
+
+        # Mock the read_group result
+        move_line_model = MagicMock()
+        move_line_model.read_group = Mock(return_value=[{"debit": 1500.0, "credit": 500.0}])
+        account.env = MagicMock()
+        account.env.__getitem__ = Mock(return_value=move_line_model)
+
+        account._get_odoo_account_balance = TesoteAccount._get_odoo_account_balance.__get__(
+            account, TesoteAccount
+        )
+
+        result = account._get_odoo_account_balance()
+
+        # Balance = debit - credit = 1500 - 500 = 1000
+        assert result == 1000.0
+
+        # Verify read_group was called with correct parameters
+        move_line_model.read_group.assert_called_once()
+        call_args = move_line_model.read_group.call_args
+        domain = call_args[1]["domain"] if "domain" in call_args[1] else call_args[0][0]
+        assert ("account_id", "=", 10) in domain
+        assert ("parent_state", "=", "posted") in domain
+
+    def test_returns_zero_when_no_move_lines(self):
+        """Test that method returns 0.0 when no move lines exist."""
+        from models.tesote_account import TesoteAccount
+
+        account = Mock(spec=TesoteAccount)
+        account.ensure_one = Mock()
+        account.odoo_account_id = Mock(id=10)
+
+        # Mock empty read_group result
+        move_line_model = MagicMock()
+        move_line_model.read_group = Mock(return_value=[])
+        account.env = MagicMock()
+        account.env.__getitem__ = Mock(return_value=move_line_model)
+
+        account._get_odoo_account_balance = TesoteAccount._get_odoo_account_balance.__get__(
+            account, TesoteAccount
+        )
+
+        result = account._get_odoo_account_balance()
+
+        assert result == 0.0
 
 
 class TestGetAdjustmentJournal:

@@ -205,7 +205,7 @@ class TesoteAccount(models.Model):
             return False
 
         # Get current Odoo account balance (sum of debits - credits)
-        odoo_balance = self.odoo_account_id.current_balance or 0.0
+        odoo_balance = self._get_odoo_account_balance()
 
         # Get Tesote balance (already stored on this record)
         tesote_balance = self.balance or 0.0
@@ -228,6 +228,39 @@ class TesoteAccount(models.Model):
 
         # Create adjustment journal entry
         return self._create_balance_adjustment(difference)
+
+    def _get_odoo_account_balance(self):
+        """
+        Calculate the current balance of the linked Odoo account.
+
+        Computes balance from posted account.move.line entries as
+        sum(debit) - sum(credit). Odoo 18 does not provide a current_balance
+        field on account.account, so we calculate it directly.
+
+        Returns:
+            float: The account balance (debit - credit)
+        """
+        self.ensure_one()
+
+        if not self.odoo_account_id:
+            return 0.0
+
+        # Query posted move lines for this account
+        result = self.env["account.move.line"].read_group(
+            domain=[
+                ("account_id", "=", self.odoo_account_id.id),
+                ("parent_state", "=", "posted"),
+            ],
+            fields=["debit:sum", "credit:sum"],
+            groupby=[],
+        )
+
+        if result:
+            debit = result[0].get("debit", 0.0) or 0.0
+            credit = result[0].get("credit", 0.0) or 0.0
+            return debit - credit
+
+        return 0.0
 
     def _create_balance_adjustment(self, amount):
         """
