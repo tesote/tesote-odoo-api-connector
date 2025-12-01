@@ -192,6 +192,18 @@ class TesoteAccount(models.Model):
             )
             return False
 
+        # Check currency compatibility - only sync if currencies match
+        odoo_account_currency = (
+            self.odoo_account_id.currency_id or self.odoo_account_id.company_id.currency_id
+        )
+        if self.currency_id and odoo_account_currency and self.currency_id != odoo_account_currency:
+            _logger.warning(
+                f"Currency mismatch for {self.name}: "
+                f"Tesote={self.currency_id.name}, Odoo={odoo_account_currency.name}. "
+                f"Skipping balance sync to avoid incorrect adjustments."
+            )
+            return False
+
         # Get current Odoo account balance (sum of debits - credits)
         odoo_balance = self.odoo_account_id.current_balance or 0.0
 
@@ -325,7 +337,7 @@ class TesoteAccount(models.Model):
         if not journal:
             journal = self.env["account.journal"].create(
                 {
-                    "name": "Tesote Adjustments",
+                    "name": _("Tesote Adjustments"),
                     "code": "TSADJ",
                     "type": "general",
                     "company_id": self.backend_id.company_id.id,

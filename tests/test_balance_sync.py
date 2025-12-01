@@ -69,6 +69,12 @@ class TestSyncBalanceToOdoo:
         account.odoo_account_id = Mock()
         account.odoo_account_id.current_balance = 800.0
 
+        # Set up matching currencies to pass currency validation
+        usd_currency = Mock(id=1, name="USD")
+        account.currency_id = usd_currency
+        account.odoo_account_id.currency_id = usd_currency
+        account.odoo_account_id.company_id = Mock(currency_id=usd_currency)
+
         backend = Mock()
         backend.suspense_account_id = Mock()
         backend.company_id = Mock(id=1)
@@ -123,6 +129,22 @@ class TestSyncBalanceToOdoo:
 
         mock_account.balance = 1000.005
         mock_account.odoo_account_id.current_balance = 1000.0
+        mock_account.sync_balance_to_odoo = TesoteAccount.sync_balance_to_odoo.__get__(
+            mock_account, TesoteAccount
+        )
+
+        result = mock_account.sync_balance_to_odoo()
+
+        assert result is False
+
+    def test_sync_balance_skips_currency_mismatch(self, mock_account):
+        """Test that sync is skipped when currencies don't match."""
+        from models.tesote_account import TesoteAccount
+
+        # Set up different currencies
+        eur_currency = Mock(id=2, name="EUR")
+        mock_account.currency_id = eur_currency  # Tesote account in EUR
+
         mock_account.sync_balance_to_odoo = TesoteAccount.sync_balance_to_odoo.__get__(
             mock_account, TesoteAccount
         )
