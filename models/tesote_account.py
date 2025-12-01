@@ -259,54 +259,46 @@ class TesoteAccount(models.Model):
         bank_account = self.odoo_account_id
         suspense_account = self.backend_id.suspense_account_id
 
+        # Handle multi-currency: check if bank account uses a different currency
+        company_currency = self.backend_id.company_id.currency_id
+        bank_currency = bank_account.currency_id or company_currency
+        is_multi_currency = bank_currency != company_currency
+
         if amount > 0:
             # Need to increase bank balance: Debit bank, Credit suspense
-            lines = [
-                (
-                    0,
-                    0,
-                    {
-                        "account_id": bank_account.id,
-                        "debit": abs(amount),
-                        "credit": 0,
-                        "name": _("Tesote balance adjustment"),
-                    },
-                ),
-                (
-                    0,
-                    0,
-                    {
-                        "account_id": suspense_account.id,
-                        "debit": 0,
-                        "credit": abs(amount),
-                        "name": _("Tesote balance adjustment"),
-                    },
-                ),
-            ]
+            bank_line = {
+                "account_id": bank_account.id,
+                "debit": abs(amount),
+                "credit": 0,
+                "name": _("Tesote balance adjustment"),
+            }
+            suspense_line = {
+                "account_id": suspense_account.id,
+                "debit": 0,
+                "credit": abs(amount),
+                "name": _("Tesote balance adjustment"),
+            }
         else:
             # Need to decrease bank balance: Credit bank, Debit suspense
-            lines = [
-                (
-                    0,
-                    0,
-                    {
-                        "account_id": bank_account.id,
-                        "debit": 0,
-                        "credit": abs(amount),
-                        "name": _("Tesote balance adjustment"),
-                    },
-                ),
-                (
-                    0,
-                    0,
-                    {
-                        "account_id": suspense_account.id,
-                        "debit": abs(amount),
-                        "credit": 0,
-                        "name": _("Tesote balance adjustment"),
-                    },
-                ),
-            ]
+            bank_line = {
+                "account_id": bank_account.id,
+                "debit": 0,
+                "credit": abs(amount),
+                "name": _("Tesote balance adjustment"),
+            }
+            suspense_line = {
+                "account_id": suspense_account.id,
+                "debit": abs(amount),
+                "credit": 0,
+                "name": _("Tesote balance adjustment"),
+            }
+
+        # Add currency fields for multi-currency bank accounts
+        if is_multi_currency:
+            bank_line["currency_id"] = bank_currency.id
+            bank_line["amount_currency"] = amount  # Signed amount in foreign currency
+
+        lines = [(0, 0, bank_line), (0, 0, suspense_line)]
 
         move_vals["line_ids"] = lines
 

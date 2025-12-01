@@ -268,6 +268,113 @@ class TestGetAdjustmentJournal:
         assert result == new_journal
 
 
+class TestCreateBalanceAdjustment:
+    """Test _create_balance_adjustment functionality."""
+
+    @pytest.fixture
+    def mock_account(self):
+        """Create a mock TesoteAccount for adjustment tests."""
+        from models.tesote_account import TesoteAccount
+
+        account = Mock(spec=TesoteAccount)
+        account.ensure_one = Mock()
+        account.name = "Test Account"
+        account.tesote_id = "acc_123"
+
+        # Set up currencies
+        usd_currency = Mock(id=1, name="USD")
+        eur_currency = Mock(id=2, name="EUR")
+
+        account.odoo_account_id = Mock()
+        account.odoo_account_id.id = 10
+        account.odoo_account_id.currency_id = usd_currency
+
+        backend = Mock()
+        backend.company_id = Mock(id=1, currency_id=usd_currency)
+        backend.suspense_account_id = Mock(id=20)
+        account.backend_id = backend
+
+        # Mock environment using side_effect for __getitem__
+        journal = Mock(id=5)
+        move = Mock(name="TSADJ/2024/001")
+        move.action_post = Mock()
+
+        journal_model = MagicMock()
+        journal_model.search = Mock(return_value=journal)
+        move_model = MagicMock()
+        move_model.create = Mock(return_value=move)
+
+        env_mock = MagicMock()
+
+        def env_getitem(key):
+            if key == "account.journal":
+                return journal_model
+            if key == "account.move":
+                return move_model
+            return MagicMock()
+
+        env_mock.__getitem__ = Mock(side_effect=env_getitem)
+        account.env = env_mock
+
+        # Store references for assertions
+        account._test_usd_currency = usd_currency
+        account._test_eur_currency = eur_currency
+        account._test_move_model = move_model
+
+        return account
+
+    def test_creates_move_lines_without_currency_for_same_currency(self, mock_account):
+        """Test that move lines don't have currency_id when same as company currency."""
+        from models.tesote_account import TesoteAccount
+
+        mock_account._create_balance_adjustment = TesoteAccount._create_balance_adjustment.__get__(
+            mock_account, TesoteAccount
+        )
+        mock_account._get_adjustment_journal = TesoteAccount._get_adjustment_journal.__get__(
+            mock_account, TesoteAccount
+        )
+
+        mock_account._create_balance_adjustment(100.0)
+
+        # Get the create call arguments
+        create_call = mock_account._test_move_model.create.call_args[0][0]
+        lines = create_call["line_ids"]
+
+        # Bank line should NOT have currency_id (same currency as company)
+        bank_line = lines[0][2]
+        assert "currency_id" not in bank_line
+        assert "amount_currency" not in bank_line
+
+    def test_creates_move_lines_with_currency_for_different_currency(self, mock_account):
+        """Test that move lines have currency_id when different from company currency."""
+        from models.tesote_account import TesoteAccount
+
+        # Set bank account to use EUR (different from company USD)
+        mock_account.odoo_account_id.currency_id = mock_account._test_eur_currency
+
+        mock_account._create_balance_adjustment = TesoteAccount._create_balance_adjustment.__get__(
+            mock_account, TesoteAccount
+        )
+        mock_account._get_adjustment_journal = TesoteAccount._get_adjustment_journal.__get__(
+            mock_account, TesoteAccount
+        )
+
+        mock_account._create_balance_adjustment(100.0)
+
+        # Get the create call arguments
+        create_call = mock_account._test_move_model.create.call_args[0][0]
+        lines = create_call["line_ids"]
+
+        # Bank line should have currency_id and amount_currency
+        bank_line = lines[0][2]
+        assert bank_line["currency_id"] == 2  # EUR id
+        assert bank_line["amount_currency"] == 100.0
+
+        # Suspense line should NOT have currency_id (company currency)
+        suspense_line = lines[1][2]
+        assert "currency_id" not in suspense_line
+
+
 class TestBalanceSyncIntegration:
     """Test balance sync integration with import flow."""
 
