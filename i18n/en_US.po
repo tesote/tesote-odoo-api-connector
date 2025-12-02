@@ -369,3 +369,30 @@ msgstr "All accounts are mapped!"
 #: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_mapping_tree
 msgid "Link Tesote accounts to Odoo accounting accounts to enable journal entry creation."
 msgstr "Link Tesote accounts to Odoo accounting accounts to enable journal entry creation."
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__suspense_account_id
+msgid "Suspense Account"
+msgstr "Suspense Account"
+
+#. module: tesote_connector
+#: model:ir.model.fields,help:tesote_connector.field_tesote_backend__suspense_account_id
+msgid "Account used for balance adjustment entries when syncing Tesote balances to Odoo"
+msgstr "Account used for balance adjustment entries when syncing Tesote balances to Odoo"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Balance Sync"
+msgstr "Balance Sync"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_account.py:0
+#, python-format
+msgid "Tesote balance adjustment"
+msgstr "Tesote balance adjustment"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_account.py:0
+#, python-format
+msgid "Balance adjustment for Tesote account %(account)s"
+msgstr "Balance adjustment for Tesote account %(account)s"

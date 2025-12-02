@@ -1,5 +1,6 @@
 # Copyright 2024 tesote.com
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
+# ruff: noqa: I001
 
 """
 Tesote API Adapter.
@@ -12,6 +13,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
+
 from odoo.exceptions import UserError
 
 # Handle both package and direct imports for testing

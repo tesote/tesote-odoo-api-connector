@@ -90,6 +90,14 @@ class TesoteBackend(models.Model):
         "res.company", string="Company", required=True, default=lambda self: self.env.company
     )
 
+    # Suspense account for balance adjustments
+    suspense_account_id = fields.Many2one(
+        "account.account",
+        string="Suspense Account",
+        help="Account used for balance adjustment entries when syncing Tesote balances to Odoo",
+        domain="[('account_type', 'in', ['asset_current', 'liability_current'])]",
+    )
+
     account_ids = fields.One2many("tesote.account", "backend_id", string="Accounts")
 
     last_sync_date = fields.Datetime(string="Last Synchronization", readonly=True)
@@ -447,14 +455,32 @@ class TesoteBackend(models.Model):
                 # Update last import date
                 backend.last_account_import_date = fields.Datetime.now()
 
+                # Sync balances for mapped accounts (if suspense account configured)
+                balance_adjustments = 0
+                if backend.suspense_account_id:
+                    mapped_accounts = backend.account_ids.filtered(lambda a: a.odoo_account_id)
+                    for account in mapped_accounts:
+                        try:
+                            if account.sync_balance_to_odoo():
+                                balance_adjustments += 1
+                        except Exception as e:
+                            _logger.warning(f"Balance sync failed for {account.name}: {e}")
+
                 # Mark log as successful
+                details = f"Background import completed: {count} accounts imported"
+                if balance_adjustments:
+                    details += f", {balance_adjustments} balance adjustments created"
+
                 log.set_success(
                     records_added=count,
                     api_calls=1,
-                    details=f"Background import completed: {count} accounts imported",
+                    details=details,
                 )
 
-                _logger.info(f"Background account import completed: {count} accounts imported")
+                _logger.info(
+                    f"Background account import completed: {count} accounts imported, "
+                    f"{balance_adjustments} balance adjustments"
+                )
 
                 # Commit the transaction
                 new_cr.commit()

@@ -53,6 +53,14 @@
                                 <field name="auto_sync_enabled"/>
                                 <field name="sync_interval_hours" invisible="not auto_sync_enabled"/>
                             </group>
+                            <group string="Balance Sync">
+                                <field name="suspense_account_id" options="{'no_create': True}"/>
+                                <div class="text-muted" colspan="2">
+                                    When accounts are imported, if a Tesote account is mapped to an Odoo account,
+                                    a journal entry will be created to adjust the Odoo balance to match Tesote.
+                                    The suspense account is used as the counter-account for these adjustments.
+                                </div>
+                            </group>
                         </page>
                         <page string="Accounts">
                             <field name="account_ids" readonly="1"/>
