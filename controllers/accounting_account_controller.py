@@ -1,6 +1,6 @@
 import json
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 
 # Handle both package and direct imports for testing
@@ -8,6 +8,11 @@ try:
     from ..utils.colored_logger import get_logger
 except ImportError:
     from utils.colored_logger import get_logger
+
+try:
+    from ..utils.sentry_config import capture_exception
+except ImportError:
+    from utils.sentry_config import capture_exception
 
 _logger = get_logger(__name__, category="api")
 
@@ -35,8 +40,9 @@ class AccountingAccountController(http.Controller):
             return self._json_response({"accounting_accounts": accounting_account_data})
 
         except Exception as e:
-            _logger.error(f"Error fetching accounting accounts: {e}", exc_info=True)
-            return self._json_response({"error": str(e)}, status=500)
+            _logger.error("Error fetching accounting accounts", exc_info=True)
+            capture_exception(e)
+            return self._json_response({"error": _("Internal server error")}, status=500)
 
     @http.route(
         "/api/accounting_accounts/<int:accounting_account_id>",
@@ -70,9 +76,10 @@ class AccountingAccountController(http.Controller):
 
         except Exception as e:
             _logger.error(
-                f"Error fetching accounting account {accounting_account_id}: {e}", exc_info=True
+                "Error fetching accounting account %s", accounting_account_id, exc_info=True
             )
-            return self._json_response({"error": str(e)}, status=500)
+            capture_exception(e)
+            return self._json_response({"error": _("Internal server error")}, status=500)
 
     def _serialize_accounting_account(self, accounting_account):
         """
