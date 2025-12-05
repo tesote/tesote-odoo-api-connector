@@ -1,35 +1,44 @@
-import json
-
 from odoo import _, http
 from odoo.http import request
 
 # Handle both package and direct imports for testing
 try:
-    from ..utils.colored_logger import get_logger
+    from ...utils.colored_logger import get_logger
 except ImportError:
     from utils.colored_logger import get_logger
 
 try:
-    from ..utils.sentry_config import capture_exception
+    from ...utils.sentry_config import capture_exception
 except ImportError:
     from utils.sentry_config import capture_exception
+
+try:
+    from .base_controller import BaseApiController
+except ImportError:
+    from controllers.api.base_controller import BaseApiController
 
 _logger = get_logger(__name__, category="api")
 
 
-class AccountingAccountController(http.Controller):
+class AccountingAccountController(BaseApiController):
     """RESTful API controller for Odoo accounting accounts."""
 
-    @http.route("/api/accounting_accounts", type="http", auth="user", methods=["GET"], csrf=False)
+    @http.route("/api/accounting_accounts", type="http", auth="public", methods=["GET"], csrf=False)
     def index(self, **kwargs):
         """
         GET /api/accounting_accounts - List all accounting accounts.
 
+        Requires authentication via X-Tesote-Signature and X-Tesote-Timestamp headers.
+
         Returns:
             JSON array of accounting account objects with id, code, name, account_type, etc.
         """
+        is_authenticated, error_response = self._authenticate_request()
+        if not is_authenticated:
+            return error_response
+
         try:
-            accounting_accounts = request.env["account.account"].search([])
+            accounting_accounts = request.env["account.account"].sudo().search([])
 
             accounting_account_data = []
             for accounting_account in accounting_accounts:
@@ -47,7 +56,7 @@ class AccountingAccountController(http.Controller):
     @http.route(
         "/api/accounting_accounts/<int:accounting_account_id>",
         type="http",
-        auth="user",
+        auth="public",
         methods=["GET"],
         csrf=False,
     )
@@ -55,14 +64,20 @@ class AccountingAccountController(http.Controller):
         """
         GET /api/accounting_accounts/:id - Show a single accounting account.
 
+        Requires authentication via X-Tesote-Signature and X-Tesote-Timestamp headers.
+
         Args:
             accounting_account_id: Odoo account.account ID
 
         Returns:
             JSON object with accounting account details
         """
+        is_authenticated, error_response = self._authenticate_request()
+        if not is_authenticated:
+            return error_response
+
         try:
-            accounting_account = request.env["account.account"].browse(accounting_account_id)
+            accounting_account = request.env["account.account"].sudo().browse(accounting_account_id)
 
             if not accounting_account.exists():
                 return self._json_response(
@@ -111,20 +126,3 @@ class AccountingAccountController(http.Controller):
                 else False
             ),
         }
-
-    def _json_response(self, data, status=200):
-        """
-        Create a JSON HTTP response.
-
-        Args:
-            data: Dictionary to serialize as JSON
-            status: HTTP status code
-
-        Returns:
-            Odoo HTTP response object
-        """
-        return request.make_response(
-            json.dumps(data, indent=2),
-            status=status,
-            headers=[("Content-Type", "application/json")],
-        )
