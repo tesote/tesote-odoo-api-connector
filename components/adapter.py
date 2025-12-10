@@ -166,6 +166,7 @@ class TesoteAdapter:
         "accounts": "accounts",
         "account_detail": "accounts/{account_id}",
         "transactions_sync": "accounts/{account_id}/transactions/sync",
+        "invoices_sync": "accounts/{account_id}/invoices/sync",
         "status": "status",
         "whoami": "whoami",
     }
@@ -566,6 +567,64 @@ class TesoteAdapter:
 
         _logger.info(
             f"Sync result: {added} added, {modified} modified, {removed} removed transactions"
+        )
+
+        return result
+
+    def sync_invoices(
+        self, tesote_account_id: str, cursor: str | None = None, count: int = 100
+    ) -> dict[str, Any]:
+        """
+        Sync invoices using v2 nested endpoint (RESTful).
+
+        Uses: POST /api/v2/accounts/{accountId}/invoices/sync
+
+        This follows the same pattern as transaction sync with the account ID
+        in the URL path.
+
+        Args:
+            tesote_account_id: The Tesote account ID to sync
+            cursor: Sync cursor (None/null for initial sync, or cursor UUID from previous sync)
+            count: Maximum number of invoices to return (max 500)
+
+        Returns:
+            Dictionary containing:
+                - added: List of new invoices
+                - modified: List of updated invoices
+                - removed: List of deleted invoice IDs
+                - next_cursor: Cursor for next sync
+                - has_more: Boolean indicating more data available
+        """
+        # Build request data
+        data = {
+            "count": min(count, 500),  # API max is 500
+        }
+
+        # Only include cursor if it's provided and not None
+        if cursor is not None:
+            # Skip if it's our special marker
+            if cursor != "synced_without_history":
+                data["cursor"] = cursor
+
+        # Detailed sync logging (dev mode only)
+        if _is_dev_mode():
+            _logger.info(
+                f"=== SYNC INVOICES REQUEST ===\n"
+                f"Endpoint: POST /api/v2/accounts/{tesote_account_id}/invoices/sync\n"
+                f"Cursor: {cursor!r} (type: {type(cursor).__name__})\n"
+                f"Count: {data['count']}\n"
+                f"Request body: {data}"
+            )
+
+        result = self._request("POST", "invoices_sync", data=data, account_id=tesote_account_id)
+
+        # Log sync statistics
+        added = len(result.get("added", []))
+        modified = len(result.get("modified", []))
+        removed = len(result.get("removed", []))
+
+        _logger.info(
+            f"Invoice sync result: {added} added, {modified} modified, {removed} removed invoices"
         )
 
         return result

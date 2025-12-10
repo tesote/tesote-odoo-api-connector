@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_tesote_invoice_form" model="ir.ui.view">
+        <field name="name">tesote.invoice.form</field>
+        <field name="model">tesote.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Tesote Invoice" create="false">
+                <header>
+                    <button name="action_create_journal_entry" type="object"
+                            string="Create Journal Entry"
+                            class="btn-primary"
+                            invisible="account_move_id"/>
+                    <button name="action_view_journal_entry" type="object"
+                            string="View Journal Entry"
+                            class="btn-secondary"
+                            invisible="not account_move_id"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,sent,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_journal_entry" type="object"
+                                class="oe_stat_button" icon="fa-book"
+                                invisible="not account_move_id">
+                            <field name="is_reconciled" widget="boolean"
+                                   string="Reconciled"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="invoice_number" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="tesote_id" readonly="1"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Invoice Details">
+                            <field name="invoice_type"/>
+                            <field name="account_id" readonly="1"/>
+                            <field name="backend_id" readonly="1"/>
+                            <field name="invoice_date"/>
+                            <field name="due_date"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group string="Partner">
+                            <field name="partner_id"/>
+                            <field name="partner_name"/>
+                            <field name="partner_vat"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Amounts">
+                            <field name="subtotal"/>
+                            <field name="tax_amount"/>
+                            <field name="total_amount"/>
+                            <field name="paid_amount"/>
+                            <field name="amount_due"/>
+                            <field name="payment_status"/>
+                        </group>
+                        <group string="Odoo Integration">
+                            <field name="account_move_id" readonly="1"/>
+                            <field name="is_reconciled"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoice Lines" name="lines">
+                            <field name="line_ids" nolabel="1">
+                                <list string="Invoice Lines" create="false" delete="false">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="discount"/>
+                                    <field name="tax_amount"/>
+                                    <field name="total_amount"/>
+                                    <field name="product_id" optional="hide"/>
+                                    <field name="account_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" nolabel="1"
+                                   placeholder="Invoice description or notes..."/>
+                        </page>
+                        <page string="Synchronization" name="sync"
+                              groups="base.group_no_one">
+                            <group>
+                                <field name="tesote_created_at" readonly="1"/>
+                                <field name="tesote_updated_at" readonly="1"/>
+                                <field name="invoice_data" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_tesote_invoice_tree" model="ir.ui.view">
+        <field name="name">tesote.invoice.tree</field>
+        <field name="model">tesote.invoice</field>
+        <field name="arch" type="xml">
+            <list string="Tesote Invoices" create="false"
+                  decoration-warning="status == 'sent'"
+                  decoration-success="status == 'paid'"
+                  decoration-danger="status == 'overdue'"
+                  decoration-muted="status == 'cancelled'">
+                <field name="invoice_number"/>
+                <field name="invoice_date"/>
+                <field name="due_date"/>
+                <field name="invoice_type"/>
+                <field name="partner_name"/>
+                <field name="account_id"/>
+                <field name="total_amount" sum="Total"/>
+                <field name="paid_amount" sum="Total Paid"/>
+                <field name="amount_due" sum="Total Due"/>
+                <field name="currency_id"/>
+                <field name="status"/>
+                <field name="payment_status"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_tesote_invoice_search" model="ir.ui.view">
+        <field name="name">tesote.invoice.search</field>
+        <field name="model">tesote.invoice</field>
+        <field name="arch" type="xml">
+            <search string="Search Tesote Invoices">
+                <field name="invoice_number"/>
+                <field name="tesote_id"/>
+                <field name="partner_name"/>
+                <field name="partner_vat"/>
+                <separator/>
+                <!-- Status Filters -->
+                <filter string="Draft" name="draft"
+                        domain="[('status', '=', 'draft')]"/>
+                <filter string="Sent" name="sent"
+                        domain="[('status', '=', 'sent')]"/>
+                <filter string="Paid" name="paid"
+                        domain="[('status', '=', 'paid')]"/>
+                <filter string="Partial" name="partial"
+                        domain="[('status', '=', 'partial')]"/>
+                <filter string="Overdue" name="overdue"
+                        domain="[('status', '=', 'overdue')]"/>
+                <filter string="Cancelled" name="cancelled"
+                        domain="[('status', '=', 'cancelled')]"/>
+                <separator/>
+                <!-- Payment Status Filters -->
+                <filter string="Not Paid" name="not_paid"
+                        domain="[('payment_status', '=', 'not_paid')]"/>
+                <filter string="Partially Paid" name="partially_paid"
+                        domain="[('payment_status', '=', 'partial')]"/>
+                <filter string="Fully Paid" name="fully_paid"
+                        domain="[('payment_status', '=', 'paid')]"/>
+                <separator/>
+                <!-- Invoice Type Filters -->
+                <filter string="Customer Invoices" name="customer_invoice"
+                        domain="[('invoice_type', '=', 'customer_invoice')]"/>
+                <filter string="Vendor Bills" name="vendor_bill"
+                        domain="[('invoice_type', '=', 'vendor_bill')]"/>
+                <filter string="Credit Notes" name="credit_note"
+                        domain="[('invoice_type', '=', 'credit_note')]"/>
+                <separator/>
+                <!-- Date Filters -->
+                <filter string="This Month" name="this_month"
+                        domain="[('invoice_date', '>=', (datetime.datetime.now().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 30 Days" name="last_30_days"
+                        domain="[('invoice_date', '>=', (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter string="This Year" name="this_year"
+                        domain="[('invoice_date', '>=', (datetime.datetime.now().replace(month=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <!-- Reconciliation -->
+                <filter string="Not Reconciled" name="not_reconciled"
+                        domain="[('is_reconciled', '=', False)]"/>
+                <filter string="Reconciled" name="reconciled"
+                        domain="[('is_reconciled', '=', True)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Account" name="group_account"
+                            context="{'group_by': 'account_id'}"/>
+                    <filter string="Partner" name="group_partner"
+                            context="{'group_by': 'partner_name'}"/>
+                    <filter string="Status" name="group_status"
+                            context="{'group_by': 'status'}"/>
+                    <filter string="Type" name="group_type"
+                            context="{'group_by': 'invoice_type'}"/>
+                    <filter string="Invoice Month" name="group_invoice_date"
+                            context="{'group_by': 'invoice_date:month'}"/>
+                    <filter string="Due Date" name="group_due_date"
+                            context="{'group_by': 'due_date:month'}"/>
+                    <filter string="Payment Status" name="group_payment_status"
+                            context="{'group_by': 'payment_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_tesote_invoice_pivot" model="ir.ui.view">
+        <field name="name">tesote.invoice.pivot</field>
+        <field name="model">tesote.invoice</field>
+        <field name="arch" type="xml">
+            <pivot string="Invoice Analysis">
+                <field name="account_id" type="row"/>
+                <field name="invoice_date" interval="month" type="col"/>
+                <field name="total_amount" type="measure"/>
+                <field name="paid_amount" type="measure"/>
+                <field name="amount_due" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_tesote_invoice_graph" model="ir.ui.view">
+        <field name="name">tesote.invoice.graph</field>
+        <field name="model">tesote.invoice</field>
+        <field name="arch" type="xml">
+            <graph string="Invoice Trends" type="bar">
+                <field name="invoice_date" interval="month"/>
+                <field name="total_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_tesote_invoice" model="ir.actions.act_window">
+        <field name="name">Invoices</field>
+        <field name="res_model">tesote.invoice</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_tesote_invoice_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No invoices synchronized yet
+            </p>
+            <p>
+                Sync invoices from your Tesote accounts to start tracking them here.
+            </p>
+        </field>
+    </record>
+</odoo>

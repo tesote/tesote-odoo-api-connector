@@ -11,6 +11,8 @@ from . import tesote_account  # noqa: F401 - Inherits from tesote_binding
 from . import tesote_backend  # noqa: F401
 from . import tesote_sync_log  # noqa: F401
 from . import tesote_transaction  # noqa: F401 - Inherits from tesote_binding
+from . import tesote_invoice  # noqa: F401 - Inherits from tesote_binding
+from . import tesote_invoice_line  # noqa: F401
 from . import tesote_webhook_config  # noqa: F401
 from . import tesote_webhook_event  # noqa: F401
 from . import tesote_webhook_event_type  # noqa: F401

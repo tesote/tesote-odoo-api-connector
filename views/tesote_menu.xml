@@ -71,6 +71,14 @@
         action="action_tesote_transaction"
         sequence="20"/>
 
+    <!-- Invoices Menu -->
+    <menuitem
+        id="menu_tesote_invoice"
+        name="Invoices"
+        parent="menu_tesote_data"
+        action="action_tesote_invoice"
+        sequence="30"/>
+
     <!-- Webhooks Menu -->
     <menuitem
         id="menu_tesote_webhook"
@@ -117,4 +125,12 @@
         parent="menu_tesote_reports"
         action="action_tesote_transaction"
         sequence="10"/>
+
+    <!-- Invoice Analysis -->
+    <menuitem
+        id="menu_tesote_invoice_analysis"
+        name="Invoice Analysis"
+        parent="menu_tesote_reports"
+        action="action_tesote_invoice"
+        sequence="20"/>
 </odoo>

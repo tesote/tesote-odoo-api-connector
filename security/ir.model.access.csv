@@ -5,6 +5,10 @@ access_tesote_account_user,tesote.account.user,model_tesote_account,base.group_u
 access_tesote_account_manager,tesote.account.manager,model_tesote_account,account.group_account_manager,1,1,1,1
 access_tesote_transaction_user,tesote.transaction.user,model_tesote_transaction,base.group_user,1,0,0,0
 access_tesote_transaction_manager,tesote.transaction.manager,model_tesote_transaction,account.group_account_manager,1,1,1,1
+access_tesote_invoice_user,tesote.invoice.user,model_tesote_invoice,base.group_user,1,0,0,0
+access_tesote_invoice_manager,tesote.invoice.manager,model_tesote_invoice,account.group_account_manager,1,1,1,1
+access_tesote_invoice_line_user,tesote.invoice.line.user,model_tesote_invoice_line,base.group_user,1,0,0,0
+access_tesote_invoice_line_manager,tesote.invoice.line.manager,model_tesote_invoice_line,account.group_account_manager,1,1,1,1
 access_tesote_sync_log_user,tesote.sync.log.user,model_tesote_sync_log,base.group_user,1,1,1,0
 access_tesote_sync_log_manager,tesote.sync.log.manager,model_tesote_sync_log,account.group_account_manager,1,1,1,1
 access_tesote_webhook_config_user,tesote.webhook.config.user,model_tesote_webhook_config,base.group_user,1,0,0,0

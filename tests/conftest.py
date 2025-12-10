@@ -42,6 +42,7 @@ class MockFields:
     One2many = MagicMock()
     Many2many = MagicMock()
     Html = MagicMock()
+    Monetary = MagicMock()
 
 
 class MockApi:

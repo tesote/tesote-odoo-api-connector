@@ -1002,3 +1002,194 @@ class TesoteBackend(models.Model):
         """
         self.ensure_one()
         return self.env["res.currency"].get_tesote_currency_summary()
+
+    # ==================== Invoice Sync Methods ====================
+
+    invoice_count = fields.Integer(
+        string="Invoice Count",
+        compute="_compute_invoice_count",
+        store=False,
+    )
+
+    last_invoice_sync_date = fields.Datetime(string="Last Invoice Sync")
+
+    def _compute_invoice_count(self):
+        """Compute invoice count."""
+        for backend in self:
+            backend.invoice_count = self.env["tesote.invoice"].search_count(
+                [("backend_id", "=", backend.id)]
+            )
+
+    def action_view_invoices(self):
+        """Open invoices view."""
+        self.ensure_one()
+        return {
+            "name": _("Tesote Invoices"),
+            "type": "ir.actions.act_window",
+            "res_model": "tesote.invoice",
+            "view_mode": "list,form,pivot,graph",
+            "domain": [("backend_id", "=", self.id)],
+            "context": {"default_backend_id": self.id},
+        }
+
+    def sync_invoices_v2(self, account_ids=None):
+        """
+        Sync invoices using v2 API endpoint.
+
+        Uses cursor-based synchronization for efficient updates.
+
+        Args:
+            account_ids: List of tesote.account IDs to sync (optional, syncs all if not provided)
+
+        Returns:
+            Notification action with sync results
+        """
+        self.ensure_one()
+
+        if not account_ids:
+            account_ids = self.account_ids.ids
+
+        accounts = self.env["tesote.account"].browse(account_ids)
+        total_added = 0
+        total_modified = 0
+        total_removed = 0
+
+        from ..components.adapter import TesoteAdapter
+
+        adapter = TesoteAdapter(self)
+
+        for account in accounts:
+            # Get stored cursor for this account
+            cursor = account.invoice_sync_cursor
+
+            _logger.info(
+                f"=== PROCESSING ACCOUNT FOR INVOICES ===\n"
+                f"Account Name: {account.name}\n"
+                f"Account ID: {account.tesote_id}\n"
+                f"Stored invoice cursor: {cursor!r}"
+            )
+
+            if not cursor:
+                cursor = None
+                _logger.info("No stored invoice cursor, omitting cursor for initial sync")
+
+            # Call v2 invoice sync endpoint
+            _logger.info(f"Calling sync_invoices with cursor: {cursor!r}")
+            try:
+                sync_result = adapter.sync_invoices(
+                    tesote_account_id=account.tesote_id, cursor=cursor, count=100
+                )
+            except UserError as e:
+                error_msg = str(e)
+                # Check if this is a HISTORY_SYNC_FORBIDDEN error
+                if error_msg == "HISTORY_SYNC_FORBIDDEN:SKIP":
+                    _logger.info(
+                        f"Historical invoice sync forbidden for account {account.name}. "
+                        f"Skipping historical data - will sync new invoices going forward."
+                    )
+                    sync_result = {
+                        "added": [],
+                        "modified": [],
+                        "removed": [],
+                        "next_cursor": None,
+                        "has_more": False,
+                    }
+                    account.invoice_sync_cursor = "synced_without_history"
+                else:
+                    raise
+
+            # Process results
+            added_count = len(sync_result.get("added", []))
+            modified_count = len(sync_result.get("modified", []))
+            removed_count = len(sync_result.get("removed", []))
+
+            total_added += added_count
+            total_modified += modified_count
+            total_removed += removed_count
+
+            # Process invoices
+            self._process_invoice_sync_results(account, sync_result)
+
+            # Update cursor and sync date
+            if sync_result.get("next_cursor"):
+                account.invoice_sync_cursor = sync_result["next_cursor"]
+
+            account.invoice_sync_date = fields.Datetime.now()
+
+            _logger.info(
+                f"Synced invoices for account {account.name}: "
+                f"+{added_count} ~{modified_count} -{removed_count}"
+            )
+
+        self.last_invoice_sync_date = fields.Datetime.now()
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Invoice Sync Complete"),
+                "message": _(
+                    "Invoices synced: "
+                    "%(added)d added, %(modified)d modified, %(removed)d removed"
+                )
+                % {"added": total_added, "modified": total_modified, "removed": total_removed},
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
+    def _process_invoice_sync_results(self, account, sync_result):
+        """
+        Process invoice sync results from v2 API.
+
+        Args:
+            account: tesote.account record
+            sync_result: Sync response from API
+        """
+        TesoteInvoice = self.env["tesote.invoice"]
+
+        # Process removed invoices first
+        for removed in sync_result.get("removed", []):
+            invoice_id = removed.get("invoice_id") or removed.get("id")
+            invoice = TesoteInvoice.search(
+                [("tesote_id", "=", invoice_id), ("account_id", "=", account.id)]
+            )
+            if invoice:
+                invoice.unlink()
+                _logger.info(f"Removed invoice {invoice_id}")
+
+        # Process modified invoices
+        for modified in sync_result.get("modified", []):
+            invoice_id = modified.get("invoice_id") or modified.get("id")
+            invoice = TesoteInvoice.search(
+                [("tesote_id", "=", invoice_id), ("account_id", "=", account.id)]
+            )
+            if invoice:
+                invoice.update_from_sync_data(modified)
+                _logger.info(f"Updated invoice {invoice_id}")
+
+        # Process added invoices
+        for added in sync_result.get("added", []):
+            invoice_id = added.get("invoice_id") or added.get("id")
+            # Check if already exists
+            existing = TesoteInvoice.search(
+                [("tesote_id", "=", invoice_id), ("account_id", "=", account.id)]
+            )
+            if not existing:
+                TesoteInvoice.create_from_sync_data(account, added)
+                _logger.info(f"Added invoice {invoice_id}")
+
+    def sync_all_invoices(self):
+        """Sync invoices for all accounts - button action."""
+        self.ensure_one()
+        return self.sync_invoices_v2()
+
+    @api.model
+    def _scheduler_sync_invoices(self):
+        """Scheduled job to sync invoices."""
+        backends = self.search([("active", "=", True), ("auto_sync_enabled", "=", True)])
+        for backend in backends:
+            try:
+                backend.sync_invoices_v2()
+            except Exception as e:
+                _logger.error(f"Failed to sync invoices for backend {backend.name}: {str(e)}")

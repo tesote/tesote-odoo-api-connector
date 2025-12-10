@@ -53,6 +53,12 @@ class WebhookProcessor:
                 self._handle_transaction_created(webhook_event, payload_data)
             elif webhook_event.event_type == "transactions.updated":
                 self._handle_transaction_updated(webhook_event, payload_data)
+            elif webhook_event.event_type == "invoices.created":
+                self._handle_invoice_created(webhook_event, payload_data)
+            elif webhook_event.event_type == "invoices.updated":
+                self._handle_invoice_updated(webhook_event, payload_data)
+            elif webhook_event.event_type == "invoices.paid":
+                self._handle_invoice_paid(webhook_event, payload_data)
             else:
                 raise ValueError(f"Unknown event type: {webhook_event.event_type}")
 
@@ -284,6 +290,95 @@ class WebhookProcessor:
         if update_vals:
             transaction.write(update_vals)
             _logger.info(f"Updated transaction {transaction.name} (ID: {transaction_id})")
+
+    def _handle_invoice_created(self, webhook_event, payload_data):
+        """Handle invoices.created webhook event."""
+        data = payload_data.get("data", {})
+        invoice_id = data.get("id") or data.get("invoice_id")
+        account_id = data.get("account_id")
+
+        if not invoice_id or not account_id:
+            raise ValueError("Missing invoice or account ID in payload")
+
+        TesoteAccount = self.env["tesote.account"].sudo()
+        account = TesoteAccount.search(
+            [("tesote_id", "=", account_id), ("backend_id", "=", webhook_event.backend_id.id)],
+            limit=1,
+        )
+
+        if not account:
+            _logger.warning(f"Account {account_id} not found for new invoice")
+            return
+
+        TesoteInvoice = self.env["tesote.invoice"].sudo()
+        existing = TesoteInvoice.search(
+            [("tesote_id", "=", invoice_id), ("account_id", "=", account.id)], limit=1
+        )
+
+        if existing:
+            _logger.info(f"Invoice {invoice_id} already exists")
+            return
+
+        # Use model's create_from_sync_data method
+        new_invoice = TesoteInvoice.create_from_sync_data(account, data)
+
+        _logger.info(
+            f"Created invoice {new_invoice.invoice_number} "
+            f"(ID: {invoice_id}) for account {account.name}"
+        )
+
+    def _handle_invoice_updated(self, webhook_event, payload_data):
+        """Handle invoices.updated webhook event."""
+        data = payload_data.get("data", {})
+        invoice_id = data.get("id") or data.get("invoice_id")
+
+        if not invoice_id:
+            raise ValueError("Missing invoice ID in payload")
+
+        TesoteInvoice = self.env["tesote.invoice"].sudo()
+        invoice = TesoteInvoice.search([("tesote_id", "=", invoice_id)], limit=1)
+
+        if not invoice:
+            _logger.warning(f"Invoice {invoice_id} not found for update")
+            return
+
+        # Use model's update_from_sync_data method
+        invoice.update_from_sync_data(data)
+        _logger.info(f"Updated invoice {invoice.invoice_number} (ID: {invoice_id})")
+
+    def _handle_invoice_paid(self, webhook_event, payload_data):
+        """Handle invoices.paid webhook event."""
+        data = payload_data.get("data", {})
+        invoice_id = data.get("id") or data.get("invoice_id")
+
+        if not invoice_id:
+            raise ValueError("Missing invoice ID in payload")
+
+        TesoteInvoice = self.env["tesote.invoice"].sudo()
+        invoice = TesoteInvoice.search([("tesote_id", "=", invoice_id)], limit=1)
+
+        if not invoice:
+            _logger.warning(f"Invoice {invoice_id} not found for payment update")
+            return
+
+        # Update payment status
+        paid_amount = data.get("paid_amount", invoice.total_amount)
+        invoice.write(
+            {
+                "status": "paid",
+                "paid_amount": paid_amount,
+            }
+        )
+
+        _logger.info(f"Marked invoice {invoice.invoice_number} (ID: {invoice_id}) as paid")
+
+        # Optionally trigger reconciliation
+        if data.get("reconcile", False) and not invoice.is_reconciled:
+            try:
+                invoice.create_journal_entry()
+                _logger.info(f"Created journal entry for paid invoice {invoice_id}")
+            except Exception as e:
+                _logger.warning(f"Could not create journal entry for invoice {invoice_id}: {e}")
 
     def _prepare_account_values(self, data, backend):
         """Prepare account values from webhook data."""

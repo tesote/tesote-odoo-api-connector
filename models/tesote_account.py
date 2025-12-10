@@ -57,6 +57,13 @@ class TesoteAccount(models.Model):
         for account in self:
             account.transaction_count = len(account.transaction_ids)
 
+    def _compute_invoice_count(self):
+        """Compute invoice count."""
+        for account in self:
+            account.invoice_count = self.env["tesote.invoice"].search_count(
+                [("account_id", "=", account.id)]
+            )
+
     bank_name = fields.Char(string="Bank Name", help="Name of the financial institution")
 
     legal_entity_name = fields.Char(string="Legal Entity", help="Legal entity owning the account")
@@ -86,6 +93,25 @@ class TesoteAccount(models.Model):
     sync_cursor = fields.Char(string="Sync Cursor", help="Cursor for incremental transaction sync")
 
     sync_date = fields.Datetime(string="Last Sync", help="Last successful transaction sync date")
+
+    # Invoice sync fields
+    invoice_ids = fields.One2many("tesote.invoice", "account_id", string="Invoices")
+
+    invoice_sync_cursor = fields.Char(
+        string="Invoice Sync Cursor",
+        help="Cursor for incremental invoice sync",
+    )
+
+    invoice_sync_date = fields.Datetime(
+        string="Last Invoice Sync",
+        help="Last successful invoice sync date",
+    )
+
+    invoice_count = fields.Integer(
+        string="Invoice Count",
+        compute="_compute_invoice_count",
+        store=False,
+    )
 
     active = fields.Boolean(string="Active", default=True)
 
@@ -161,6 +187,26 @@ class TesoteAccount(models.Model):
             "name": _("Transactions"),
             "type": "ir.actions.act_window",
             "res_model": "tesote.transaction",
+            "view_mode": "list,form",
+            "domain": [("account_id", "=", self.id)],
+            "context": {
+                "default_account_id": self.id,
+            },
+        }
+
+    def action_view_invoices(self):
+        """
+        Open view to display account invoices.
+
+        Returns:
+            Action dictionary to open invoice list
+        """
+        self.ensure_one()
+
+        return {
+            "name": _("Invoices"),
+            "type": "ir.actions.act_window",
+            "res_model": "tesote.invoice",
             "view_mode": "list,form",
             "domain": [("account_id", "=", self.id)],
             "context": {
