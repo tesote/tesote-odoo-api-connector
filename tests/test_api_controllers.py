@@ -29,11 +29,11 @@ class TestBaseApiController(unittest.TestCase):
 
         # Mock request
         mock_request = MagicMock()
-        mock_request.httprequest.path = "/api/accounting_accounts"
+        mock_request.httprequest.path = "/tesote/api/accounting_accounts"
         mock_request.httprequest.query_string = b""
 
         timestamp = "1234567890"
-        signed_payload = f"{timestamp}./api/accounting_accounts."
+        signed_payload = f"{timestamp}./tesote/api/accounting_accounts."
         signature = hmac.new(
             b"test_secret_key", signed_payload.encode("utf-8"), hashlib.sha256
         ).hexdigest()
@@ -59,7 +59,7 @@ class TestBaseApiController(unittest.TestCase):
 
         # Mock request
         mock_request = MagicMock()
-        mock_request.httprequest.path = "/api/accounting_accounts"
+        mock_request.httprequest.path = "/tesote/api/accounting_accounts"
         mock_request.httprequest.query_string = b""
         mock_request.httprequest.headers = {
             "X-Tesote-Signature": "invalid_signature",
@@ -157,11 +157,11 @@ class TestBaseApiController(unittest.TestCase):
         controller = BaseApiController()
 
         mock_request = MagicMock()
-        mock_request.httprequest.path = "/api/accounting_accounts"
+        mock_request.httprequest.path = "/tesote/api/accounting_accounts"
         mock_request.httprequest.query_string = b"limit=10&offset=0"
 
         timestamp = "1234567890"
-        signed_payload = f"{timestamp}./api/accounting_accounts.limit=10&offset=0"
+        signed_payload = f"{timestamp}./tesote/api/accounting_accounts.limit=10&offset=0"
         signature = hmac.new(
             b"test_secret_key", signed_payload.encode("utf-8"), hashlib.sha256
         ).hexdigest()

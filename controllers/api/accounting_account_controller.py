@@ -23,10 +23,12 @@ _logger = get_logger(__name__, category="api")
 class AccountingAccountController(BaseApiController):
     """RESTful API controller for Odoo accounting accounts."""
 
-    @http.route("/api/accounting_accounts", type="http", auth="public", methods=["GET"], csrf=False)
+    @http.route(
+        "/tesote/api/accounting_accounts", type="http", auth="public", methods=["GET"], csrf=False
+    )
     def index(self, **kwargs):
         """
-        GET /api/accounting_accounts - List all accounting accounts.
+        GET /tesote/api/accounting_accounts - List all accounting accounts.
 
         Requires authentication via X-Tesote-Signature and X-Tesote-Timestamp headers.
 
@@ -54,7 +56,7 @@ class AccountingAccountController(BaseApiController):
             return self._json_response({"error": _("Internal server error")}, status=500)
 
     @http.route(
-        "/api/accounting_accounts/<int:accounting_account_id>",
+        "/tesote/api/accounting_accounts/<int:accounting_account_id>",
         type="http",
         auth="public",
         methods=["GET"],
@@ -62,7 +64,7 @@ class AccountingAccountController(BaseApiController):
     )
     def show(self, accounting_account_id, **kwargs):
         """
-        GET /api/accounting_accounts/:id - Show a single accounting account.
+        GET /tesote/api/accounting_accounts/:id - Show a single accounting account.
 
         Requires authentication via X-Tesote-Signature and X-Tesote-Timestamp headers.
 
