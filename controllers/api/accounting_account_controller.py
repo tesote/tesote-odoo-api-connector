@@ -23,7 +23,9 @@ _logger = get_logger(__name__, category="api")
 class AccountingAccountController(BaseApiController):
     """RESTful API controller for Odoo accounting accounts."""
 
-    @http.route("/tesote/api/accounting_accounts", type="http", auth="public", methods=["GET"], csrf=False)
+    @http.route(
+        "/tesote/api/accounting_accounts", type="http", auth="public", methods=["GET"], csrf=False
+    )
     def index(self, **kwargs):
         """
         GET /tesote/api/accounting_accounts - List all accounting accounts.

@@ -213,8 +213,9 @@ class TesoteWebhookMonitor(models.Model):
             # Prepare email content
             if alert["type"] == "high_failure_rate":
                 subject = _("[Alert] High Webhook Failure Rate - %s") % backend.name
-                body = _(
-                    """
+                body = (
+                    _(
+                        """
                     <p>High webhook failure rate detected:</p>
                     <ul>
                         <li>Backend: %s</li>
@@ -223,17 +224,20 @@ class TesoteWebhookMonitor(models.Model):
                         <li>Time: %s %s:00</li>
                     </ul>
                 """
-                ) % (
-                    alert["backend"],
-                    alert["failure_rate"],
-                    alert["threshold"],
-                    alert["date"],
-                    alert["hour"],
+                    )
+                    % (
+                        alert["backend"],
+                        alert["failure_rate"],
+                        alert["threshold"],
+                        alert["date"],
+                        alert["hour"],
+                    )
                 )
             elif alert["type"] == "signature_failures":
                 subject = _("[Alert] Multiple Webhook Signature Failures - %s") % backend.name
-                body = _(
-                    """
+                body = (
+                    _(
+                        """
                     <p>Multiple webhook signature validation failures detected:</p>
                     <ul>
                         <li>Backend: %s</li>
@@ -242,7 +246,9 @@ class TesoteWebhookMonitor(models.Model):
                     </ul>
                     <p>Please check your webhook secret configuration.</p>
                 """
-                ) % (alert["backend"], alert["count"], alert["date"], alert["hour"])
+                    )
+                    % (alert["backend"], alert["count"], alert["date"], alert["hour"])
+                )
             else:
                 continue
 

@@ -242,9 +242,9 @@ class TestBaseApiController(unittest.TestCase):
             "tesote.webhook.config": MagicMock(),
         }
         mock_request.env["tesote.backend"].sudo.return_value.search.return_value = mock_backend
-        mock_request.env[
-            "tesote.webhook.config"
-        ].sudo.return_value.search.return_value = self.webhook_config
+        mock_request.env["tesote.webhook.config"].sudo.return_value.search.return_value = (
+            self.webhook_config
+        )
 
         with patch("controllers.api.base_controller.request", mock_request):
             config = controller._get_webhook_config()
@@ -338,9 +338,9 @@ class TestAccountingAccountController(unittest.TestCase):
 
         mock_request = MagicMock()
         mock_request.env = {"account.account": MagicMock()}
-        mock_request.env[
-            "account.account"
-        ].sudo.return_value.browse.return_value = self.mock_account
+        mock_request.env["account.account"].sudo.return_value.browse.return_value = (
+            self.mock_account
+        )
 
         with (
             patch("controllers.api.accounting_account_controller.request", mock_request),
@@ -382,9 +382,9 @@ class TestAccountingAccountController(unittest.TestCase):
         mock_account_not_found.exists = MagicMock(return_value=False)
 
         mock_request.env = {"account.account": MagicMock()}
-        mock_request.env[
-            "account.account"
-        ].sudo.return_value.browse.return_value = mock_account_not_found
+        mock_request.env["account.account"].sudo.return_value.browse.return_value = (
+            mock_account_not_found
+        )
 
         with (
             patch("controllers.api.accounting_account_controller.request", mock_request),
