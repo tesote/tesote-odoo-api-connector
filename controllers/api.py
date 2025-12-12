@@ -6,7 +6,7 @@ This module provides RESTful API endpoints for accessing accounting accounts dat
 
 from datetime import datetime
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 
 try:
@@ -91,7 +91,11 @@ class AccountingAPIController(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error in get_accounts: {str(e)}", exc_info=True)
-            return {"status": "error", "error": str(e), "timestamp": datetime.utcnow().isoformat()}
+            return {
+                "status": "error",
+                "error": _("Internal server error"),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
 
     @http.route(
         "/api/v1/accounts/<int:account_id>", type="json", auth="user", methods=["GET"], csrf=False
@@ -115,7 +119,7 @@ class AccountingAPIController(http.Controller):
             if not account.exists():
                 return {
                     "status": "error",
-                    "error": "Account not found",
+                    "error": _("Account not found"),
                     "timestamp": datetime.utcnow().isoformat(),
                 }
 
@@ -130,7 +134,11 @@ class AccountingAPIController(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error in get_account: {str(e)}", exc_info=True)
-            return {"status": "error", "error": str(e), "timestamp": datetime.utcnow().isoformat()}
+            return {
+                "status": "error",
+                "error": _("Internal server error"),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
 
     @http.route("/api/v1/accounts/search", type="json", auth="user", methods=["POST"], csrf=False)
     def search_accounts(
@@ -157,7 +165,7 @@ class AccountingAPIController(http.Controller):
             except (ValueError, TypeError):
                 return {
                     "status": "error",
-                    "error": "Invalid pagination parameters",
+                    "error": _("Invalid pagination parameters"),
                     "timestamp": datetime.utcnow().isoformat(),
                 }
 
@@ -198,7 +206,11 @@ class AccountingAPIController(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error in search_accounts: {str(e)}", exc_info=True)
-            return {"status": "error", "error": str(e), "timestamp": datetime.utcnow().isoformat()}
+            return {
+                "status": "error",
+                "error": _("Internal server error"),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
 
     @http.route("/api/v1/accounts/types", type="json", auth="user", methods=["GET"], csrf=False)
     def get_account_types(self, **kwargs):
@@ -230,7 +242,11 @@ class AccountingAPIController(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error in get_account_types: {str(e)}", exc_info=True)
-            return {"status": "error", "error": str(e), "timestamp": datetime.utcnow().isoformat()}
+            return {
+                "status": "error",
+                "error": _("Internal server error"),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
 
     @http.route("/api/v1/accounts/stats", type="json", auth="user", methods=["GET"], csrf=False)
     def get_account_stats(self, **kwargs):
@@ -286,4 +302,8 @@ class AccountingAPIController(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error in get_account_stats: {str(e)}", exc_info=True)
-            return {"status": "error", "error": str(e), "timestamp": datetime.utcnow().isoformat()}
+            return {
+                "status": "error",
+                "error": _("Internal server error"),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
