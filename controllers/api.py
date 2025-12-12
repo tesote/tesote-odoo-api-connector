@@ -10,8 +10,10 @@ from odoo import http
 from odoo.http import request
 
 try:
+    from ..schemas.account_schema import AccountSchema
     from ..utils.colored_logger import get_logger
 except ImportError:
+    from schemas.account_schema import AccountSchema
     from utils.colored_logger import get_logger
 
 _logger = get_logger(__name__, category="api")
@@ -20,48 +22,17 @@ _logger = get_logger(__name__, category="api")
 class AccountingAPIController(http.Controller):
     """RESTful API controller for accessing accounting accounts."""
 
-    def _validate_authentication(self):
-        """
-        Validate API authentication.
-        For now, using Odoo's built-in authentication.
-
-        Returns:
-            tuple: (success: bool, error_response: dict or None)
-        """
-        if not request.env.user or request.env.user.id == request.env.ref("base.public_user").id:
-            return False, {
-                "error": "Authentication required",
-                "message": "Please provide valid credentials",
-            }
-        return True, None
-
     def _get_account_data(self, account):
         """
-        Convert account record to dictionary.
+        Convert account record to dictionary using AccountSchema.
 
         Args:
             account: account.account record
 
         Returns:
-            dict: Account data
+            dict: Account data (ERP-agnostic format)
         """
-        return {
-            "id": account.id,
-            "code": account.code,
-            "name": account.name,
-            "account_type": account.account_type,
-            "internal_group": account.internal_group,
-            "reconcile": account.reconcile,
-            "deprecated": account.deprecated,
-            "currency_id": account.currency_id.id if account.currency_id else None,
-            "currency_code": account.currency_id.name if account.currency_id else None,
-            "company_id": account.company_id.id,
-            "company_name": account.company_id.name,
-            "current_balance": account.current_balance,
-            "allowed_journal_ids": [j.id for j in account.allowed_journal_ids],
-            "tag_ids": [{"id": t.id, "name": t.name} for t in account.tag_ids],
-            "note": account.note or "",
-        }
+        return AccountSchema.from_odoo(account)
 
     @http.route("/api/v1/accounts", type="json", auth="user", methods=["GET"], csrf=False)
     def get_accounts(self, limit=100, offset=0, domain=None, **kwargs):
@@ -69,7 +40,7 @@ class AccountingAPIController(http.Controller):
         Get list of accounting accounts.
 
         Query parameters:
-            limit (int): Maximum number of records to return (default: 100)
+            limit (int): Maximum number of records to return (default: 100, max: 500)
             offset (int): Number of records to skip (default: 0)
             domain (list): Odoo domain filter (optional)
 
@@ -77,12 +48,25 @@ class AccountingAPIController(http.Controller):
             dict: Response with accounts list and metadata
         """
         try:
+            # Validate input parameters
+            try:
+                limit = max(1, min(int(limit), 500))  # Clamp between 1-500
+                offset = max(0, int(offset))
+            except (ValueError, TypeError):
+                return {
+                    "status": "error",
+                    "error": "Invalid pagination parameters",
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+
             _logger.info(f"API request: GET /api/v1/accounts (limit={limit}, offset={offset})")
 
             # Parse domain
             search_domain = domain if domain else []
 
             # Get accounts
+            # NOTE: Using sudo() to grant API access regardless of user permissions.
+            # This is intentional for API endpoints. Future: Implement API key-based access control.
             Account = request.env["account.account"].sudo()
             total_count = Account.search_count(search_domain)
             accounts = Account.search(search_domain, limit=limit, offset=offset, order="code ASC")
@@ -159,13 +143,24 @@ class AccountingAPIController(http.Controller):
             code (str): Filter by account code (partial match)
             name (str): Filter by account name (partial match)
             account_type (str): Filter by account type
-            limit (int): Maximum number of records to return (default: 100)
+            limit (int): Maximum number of records to return (default: 100, max: 500)
             offset (int): Number of records to skip (default: 0)
 
         Returns:
             dict: Response with matching accounts
         """
         try:
+            # Validate input parameters
+            try:
+                limit = max(1, min(int(limit), 500))  # Clamp between 1-500
+                offset = max(0, int(offset))
+            except (ValueError, TypeError):
+                return {
+                    "status": "error",
+                    "error": "Invalid pagination parameters",
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+
             _logger.info("API request: POST /api/v1/accounts/search")
 
             # Build search domain
@@ -216,10 +211,12 @@ class AccountingAPIController(http.Controller):
         try:
             _logger.info("API request: GET /api/v1/accounts/types")
 
-            # Get all unique account types
+            # Get unique account types efficiently using read_group
             Account = request.env["account.account"].sudo()
-            accounts = Account.search([])
-            account_types = list(set(acc.account_type for acc in accounts if acc.account_type))
+            groups = Account.read_group(
+                domain=[], fields=["account_type"], groupby=["account_type"]
+            )
+            account_types = [g["account_type"] for g in groups if g.get("account_type")]
 
             response = {
                 "status": "success",
@@ -247,33 +244,44 @@ class AccountingAPIController(http.Controller):
             _logger.info("API request: GET /api/v1/accounts/stats")
 
             Account = request.env["account.account"].sudo()
-            accounts = Account.search([])
 
-            # Group by account type
-            type_counts = {}
-            for acc in accounts:
-                acc_type = acc.account_type or "unspecified"
-                type_counts[acc_type] = type_counts.get(acc_type, 0) + 1
+            # Total accounts
+            total_accounts = Account.search_count([])
 
-            # Group by internal group
-            group_counts = {}
-            for acc in accounts:
-                group = acc.internal_group or "unspecified"
-                group_counts[group] = group_counts.get(group, 0) + 1
+            # Group by account type using read_group for efficiency
+            type_groups = Account.read_group(
+                domain=[], fields=["account_type"], groupby=["account_type"]
+            )
+            type_counts = {
+                g["account_type"] or "unspecified": g["account_type_count"] for g in type_groups
+            }
+
+            # Group by internal group using read_group
+            group_groups = Account.read_group(
+                domain=[], fields=["internal_group"], groupby=["internal_group"]
+            )
+            group_counts = {
+                g["internal_group"] or "unspecified": g["internal_group_count"]
+                for g in group_groups
+            }
+
+            # Counts for specific attributes
+            reconcilable_count = Account.search_count([("reconcile", "=", True)])
+            deprecated_count = Account.search_count([("deprecated", "=", True)])
 
             response = {
                 "status": "success",
                 "data": {
-                    "total_accounts": len(accounts),
+                    "total_accounts": total_accounts,
                     "by_type": type_counts,
                     "by_internal_group": group_counts,
-                    "reconcilable_count": len([a for a in accounts if a.reconcile]),
-                    "deprecated_count": len([a for a in accounts if a.deprecated]),
+                    "reconcilable_count": reconcilable_count,
+                    "deprecated_count": deprecated_count,
                 },
                 "timestamp": datetime.utcnow().isoformat(),
             }
 
-            _logger.info(f"API response: Stats for {len(accounts)} accounts")
+            _logger.info(f"API response: Stats for {total_accounts} accounts")
             return response
 
         except Exception as e:
