@@ -6,7 +6,7 @@ with cursor-based pagination and service layer architecture.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from odoo import _, http
 from odoo.http import request
@@ -80,7 +80,7 @@ class AccountingAccountsV1Controller(BaseApiController):
                     "count": len(accounts),
                     "limit": limit,
                 },
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
             _logger.info(f"API v1: Listed {len(accounts)} accounts (cursor={cursor})")
@@ -148,7 +148,7 @@ class AccountingAccountsV1Controller(BaseApiController):
             response = {
                 "status": "success",
                 "data": account,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
             _logger.info(f"API v1: Retrieved account {account_id}")
@@ -247,7 +247,7 @@ class AccountingAccountsV1Controller(BaseApiController):
                         "internal_group": internal_group,
                     },
                 },
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
             _logger.info(f"API v1: Search found {len(accounts)} accounts")
@@ -303,7 +303,7 @@ class AccountingAccountsV1Controller(BaseApiController):
                 "status": "success",
                 "data": sorted(types),
                 "metadata": {"count": len(types)},
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
             _logger.info(f"API v1: Retrieved {len(types)} account types")
@@ -353,7 +353,7 @@ class AccountingAccountsV1Controller(BaseApiController):
             response = {
                 "status": "success",
                 "data": stats,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
             _logger.info(f"API v1: Retrieved stats for {stats['total_accounts']} accounts")
