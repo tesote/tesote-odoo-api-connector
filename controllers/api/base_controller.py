@@ -1,39 +1,42 @@
-import hashlib
-import hmac
+"""
+Base API controller with HMAC-SHA256 authentication.
+
+All API controllers should inherit from this to get consistent
+authentication and response handling.
+"""
+
 import json
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 
-# Handle both package and direct imports for testing
 try:
+    from ...services import AuthenticationService
     from ...utils.colored_logger import get_logger
 except ImportError:
+    from services import AuthenticationService
     from utils.colored_logger import get_logger
-
-try:
-    from ...utils.sentry_config import capture_exception
-except ImportError:
-    from utils.sentry_config import capture_exception
 
 _logger = get_logger(__name__, category="api")
 
 
 class BaseApiController(http.Controller):
     """
-    Base controller for API endpoints with authentication.
+    Base controller for API endpoints with HMAC authentication.
 
-    All API endpoints should inherit from this controller to get
-    consistent authentication and error handling.
+    Authentication uses webhook config secret key for HMAC-SHA256 verification.
+    All API endpoints inherit from this controller.
 
-    Authentication uses HMAC-SHA256 signature verification, similar to webhooks:
-    - X-Tesote-Signature: HMAC-SHA256 signature of the request
-    - X-Tesote-Timestamp: Unix timestamp of the request
+    Headers required:
+    - X-Tesote-Signature: HMAC-SHA256 signature
+    - X-Tesote-Timestamp: Unix timestamp
     """
 
     def _get_webhook_config(self):
         """
-        Get the webhook configuration for signature verification.
+        Get webhook configuration for authentication.
+
+        Reuses webhook config infrastructure for API authentication.
 
         Returns:
             tesote.webhook.config record or None
@@ -47,14 +50,15 @@ class BaseApiController(http.Controller):
             .sudo()
             .search([("backend_id", "=", backend.id)], limit=1)
         )
+
         return webhook_config
 
-    def _verify_api_key(self):
+    def _verify_authentication(self):
         """
-        Verify the API request signature using the webhook secret key.
+        Verify HMAC-SHA256 authentication.
 
-        The signature is computed as:
-        HMAC-SHA256(secret_key, timestamp + "." + request_path + "." + query_string)
+        Uses AuthenticationService for signature verification.
+        Reuses webhook secret key for API authentication.
 
         Returns:
             tuple: (is_valid: bool, error_message: str or None)
@@ -64,57 +68,48 @@ class BaseApiController(http.Controller):
         timestamp = headers.get("X-Tesote-Timestamp")
 
         if not signature or not timestamp:
-            return False, "Missing authentication headers"
+            return False, _("Missing authentication headers")
 
+        # Get webhook config for secret key
         webhook_config = self._get_webhook_config()
-        if not webhook_config:
-            _logger.error("No webhook configuration found for API authentication")
-            return False, "API not configured"
+        if not webhook_config or not webhook_config.secret_key:
+            _logger.error("No webhook config or secret key found for API auth")
+            return False, _("API not configured")
 
-        if not webhook_config.secret_key:
-            _logger.error("No secret key configured for API authentication")
-            return False, "API not configured"
+        # Use authentication service to verify signature
+        path = request.httprequest.path
+        query_string = request.httprequest.query_string.decode("utf-8")
 
-        try:
-            # Construct the signed payload: timestamp.path.query_string
-            path = request.httprequest.path
-            query_string = request.httprequest.query_string.decode("utf-8")
-            signed_payload = f"{timestamp}.{path}.{query_string}"
+        is_valid, error = AuthenticationService.verify_signature(
+            secret_key=webhook_config.secret_key,
+            signature=signature,
+            timestamp=timestamp,
+            path=path,
+            query_string=query_string,
+        )
 
-            # Calculate expected signature
-            expected = hmac.new(
-                webhook_config.secret_key.encode("utf-8"),
-                signed_payload.encode("utf-8"),
-                hashlib.sha256,
-            ).hexdigest()
+        if not is_valid:
+            _logger.warning(f"API authentication failed: {error}")
 
-            # Compare signatures securely
-            if hmac.compare_digest(expected, signature):
-                return True, None
-            else:
-                _logger.warning("API signature verification failed")
-                return False, "Invalid signature"
-
-        except Exception as e:
-            _logger.error(f"Error verifying API signature: {e}")
-            capture_exception(e)
-            return False, "Authentication error"
+        return is_valid, error
 
     def _authenticate_request(self):
         """
-        Authenticate the incoming API request.
+        Authenticate incoming API request.
 
         Returns:
             tuple: (is_authenticated: bool, error_response: Response or None)
         """
-        is_valid, error_message = self._verify_api_key()
+        is_valid, error_message = self._verify_authentication()
         if not is_valid:
-            return False, self._json_response({"error": error_message}, status=401)
+            return False, self._json_response(
+                {"status": "error", "error_code": "AUTH001", "error": error_message}, status=401
+            )
         return True, None
 
     def _json_response(self, data, status=200):
         """
-        Create a JSON HTTP response.
+        Create JSON HTTP response.
 
         Args:
             data: Dictionary to serialize as JSON
@@ -126,5 +121,30 @@ class BaseApiController(http.Controller):
         return request.make_response(
             json.dumps(data, indent=2),
             status=status,
-            headers=[("Content-Type", "application/json")],
+            headers=[("Content-Type", "application/json; charset=utf-8")],
         )
+
+    def _validate_limit(self, limit, default=100, max_limit=500):
+        """
+        Validate and clamp limit parameter.
+
+        Args:
+            limit: Limit value (can be str, int, or None)
+            default: Default limit if None
+            max_limit: Maximum allowed limit
+
+        Returns:
+            int: Validated limit (clamped between 1 and max_limit)
+
+        Raises:
+            ValueError: If limit is not a valid integer
+        """
+        try:
+            if limit is None:
+                return default
+
+            limit_int = int(limit)
+            return max(1, min(limit_int, max_limit))
+
+        except (ValueError, TypeError) as e:
+            raise ValueError(_("Limit must be an integer")) from e
