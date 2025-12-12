@@ -47,9 +47,9 @@ class AccountSchema:
             # Currency
             "currency_id": account.currency_id.id if account.currency_id else None,
             "currency_code": account.currency_id.name if account.currency_id else None,
-            # Company
-            "company_id": account.company_id.id if account.company_id else None,
-            "company_name": account.company_id.name if account.company_id else "",
+            # Company (Odoo 18: company_ids is Many2many, get first company)
+            "company_id": account.company_ids[0].id if account.company_ids else None,
+            "company_name": account.company_ids[0].name if account.company_ids else "",
             # Balance
             "current_balance": (
                 float(account.current_balance) if hasattr(account, "current_balance") else 0.0
