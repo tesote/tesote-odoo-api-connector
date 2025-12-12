@@ -1,1 +1,2 @@
-from . import accounting_account_controller, base_controller
+from . import base_controller
+from .v1 import accounting_accounts_controller
