@@ -7,7 +7,7 @@
     "author": "tesote.com",
     "maintainer": "tesote.com",
     "website": "https://tesote.com/",
-    "license": "OPL-1",
+    "license": "LGPL-3",
     "category": "Accounting/Accounting",
     "summary": "Enterprise-grade financial data synchronization from tesote.com API v2",
     "description": """
