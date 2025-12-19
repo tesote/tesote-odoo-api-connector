@@ -2,14 +2,14 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
 
 {
-    "name": "tesote.com Connector",
+    "name": "Tesote Connector",
     "version": "18.0.1.0.0",
     "author": "tesote.com",
     "maintainer": "tesote.com",
-    "website": "https://github.com/tesote/tesote-odoo-api-connector",
+    "website": "https://tesote.com/",
     "license": "LGPL-3",
     "category": "Accounting/Accounting",
-    "summary": "Enterprise-grade financial data synchronization from tesote.com API v2 - Real-time accounts, transactions, and webhook integration",
+    "summary": "Enterprise-grade financial data synchronization from tesote.com API v2",
     "description": """
 tesote.com Connector for Odoo 18.0
 ===================================

@@ -1,351 +1,297 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-
-        .header-section {
-            text-align: center;
-            padding: 40px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
-            margin-bottom: 40px;
-        }
-
-        .header-section h1 {
-            font-size: 2.5em;
-            margin: 0;
-            padding: 0;
-        }
-
-        .header-section p {
-            font-size: 1.2em;
-            margin-top: 10px;
-            opacity: 0.95;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin: 40px 0;
-        }
-
-        .feature-card {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .feature-card h3 {
-            color: #333;
-            margin-top: 0;
-        }
-
-        .feature-card p {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .section {
-            margin: 50px 0;
-        }
-
-        .section h2 {
-            color: #333;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .highlight-box {
-            background: #f0f4ff;
-            border: 1px solid #667eea;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .tech-specs {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .tech-specs ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .tech-specs li {
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .tech-specs li:last-child {
-            border-bottom: none;
-        }
-
-        .tech-specs li:before {
-            content: "✓ ";
-            color: #4caf50;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .workflow-steps {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin: 30px 0;
-        }
-
-        .step {
-            flex: 1;
-            min-width: 200px;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .step-number {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-            background: #667eea;
-            color: white;
-            border-radius: 50%;
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .step h4 {
-            color: #333;
-            margin: 10px 0;
-        }
-
-        .step p {
-            color: #666;
-            font-size: 0.95em;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: #667eea;
-            color: white;
-            border-radius: 20px;
-            font-size: 0.85em;
-            margin: 2px;
-        }
-
-        .warning-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-
-        .success-box {
-            background: #d4edda;
-            border: 1px solid #28a745;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header-section">
-            <h1>tesote.com Connector for Odoo</h1>
-            <p>Seamlessly synchronize your financial data with tesote.com API v2</p>
-        </div>
-
-        <div class="section">
-            <h2>🚀 Transform Your Financial Data Management</h2>
-            <p>The tesote.com Connector brings powerful, real-time financial data synchronization to your Odoo instance. Built specifically for Odoo 18.0, this connector leverages the latest tesote.com API v2.0.0 to provide seamless integration with your financial ecosystem.</p>
-
-            <div class="highlight-box">
-                <strong>Perfect for:</strong> Businesses using tesote.com for financial management who want to integrate their data directly into Odoo's accounting system for unified business operations.
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12" style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; margin-bottom: 30px;">
+            <h2 style="color: white; font-size: 32px; margin: 0 0 10px 0; font-weight: 700;">tesote.com Connector</h2>
+            <p style="color: rgba(255,255,255,0.95); font-size: 18px; margin: 0;">Enterprise-grade financial data synchronization for Odoo 18.0</p>
+            <div style="margin-top: 20px;">
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin: 4px;">API v2.0.0</span>
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin: 4px;">Real-time Sync</span>
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin: 4px;">Webhooks</span>
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin: 4px;">Multi-language</span>
             </div>
-        </div>
-
-        <div class="section">
-            <h2>✨ Key Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>🔄 Real-Time Synchronization</h3>
-                    <p>Automatically sync accounts and transactions in real-time using cursor-based incremental updates for optimal performance.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>📊 Transaction Lifecycle Management</h3>
-                    <p>Intelligent handling of transaction states from pending to completed, with automatic status updates after 36 business hours.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🌐 Multi-Language Support</h3>
-                    <p>Full internationalization with complete translations for English and Spanish, with easy extensibility for additional languages.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>⚡ Performance Optimized</h3>
-                    <p>Built-in rate limiting support for Standard (200/min), Premium (500/min), and Enterprise (1000/min) tiers.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🔐 Single Backend Design</h3>
-                    <p>Singleton pattern ensures clean configuration with only one backend instance, preventing conflicts and simplifying management.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🔔 Webhook Ready</h3>
-                    <p>Support for real-time webhook notifications to instantly reflect changes in your tesote.com account.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🔧 How It Works</h2>
-            <div class="workflow-steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h4>Configure</h4>
-                    <p>Set up your tesote.com API credentials in the backend configuration</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h4>Import</h4>
-                    <p>Import your accounts with a single click</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h4>Sync</h4>
-                    <p>Automatically synchronize transactions using cursor-based updates</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h4>Manage</h4>
-                    <p>View and manage all synchronized data directly in Odoo</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>📋 Technical Specifications</h2>
-            <div class="tech-specs">
-                <ul>
-                    <li>Compatible with Odoo 18.0</li>
-                    <li>Uses tesote.com API v2.0.0</li>
-                    <li>Cursor-based incremental synchronization for efficiency</li>
-                    <li>Automatic handling of transaction state transitions</li>
-                    <li>Comprehensive error handling and logging</li>
-                    <li>Full internationalization (i18n) support</li>
-                    <li>RESTful API communication with Bearer token authentication</li>
-                    <li>Automatic retry mechanism for failed requests</li>
-                    <li>Detailed sync history and audit trail</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🎯 API Endpoints Utilized</h2>
-            <p>The connector integrates with the following tesote.com API v2 endpoints:</p>
-            <div class="tech-specs">
-                <ul>
-                    <li><code>GET /api/v2/accounts</code> - Fetch all accounts</li>
-                    <li><code>GET /api/v2/accounts/{id}</code> - Fetch single account details</li>
-                    <li><code>POST /api/v2/transactions/sync</code> - Sync transactions with cursor</li>
-                    <li><code>GET /api/v2/status</code> - Check API status</li>
-                    <li><code>GET /api/v2/whoami</code> - Get client information</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🚦 Getting Started</h2>
-            <div class="workflow-steps">
-                <div class="step">
-                    <h4>Installation</h4>
-                    <p>Install the module from Odoo Apps or manually add to your addons path</p>
-                </div>
-                <div class="step">
-                    <h4>Configuration</h4>
-                    <p>Navigate to Connectors → tesote.com → Backends and add your API credentials</p>
-                </div>
-                <div class="step">
-                    <h4>First Sync</h4>
-                    <p>Click "Import Accounts" followed by "Sync Transactions" to start</p>
-                </div>
-            </div>
-
-            <div class="success-box">
-                <strong>Pro Tip:</strong> Set up scheduled actions to automatically sync transactions at regular intervals for hands-free operation.
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🏢 Rate Limiting Tiers</h2>
-            <p>The connector automatically handles rate limiting based on your tesote.com subscription:</p>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>Standard</h3>
-                    <p><strong>200 requests/minute</strong><br>Perfect for small to medium businesses</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Premium</h3>
-                    <p><strong>500 requests/minute</strong><br>Ideal for growing businesses with higher volume</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Enterprise</h3>
-                    <p><strong>1000 requests/minute</strong><br>Designed for large-scale operations</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🌍 Internationalization</h2>
-            <p>Full support for multiple languages with complete translations:</p>
-            <div class="highlight-box">
-                <span class="badge">English (en_US)</span>
-                <span class="badge">Spanish (es)</span>
-                <br><br>
-                All user interface elements, error messages, and help texts are fully translated. Additional languages can be easily added through standard Odoo translation mechanisms.
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>📞 Support</h2>
-            <p>We're here to help you get the most out of your tesote.com integration:</p>
-            <div class="tech-specs">
-                <ul>
-                    <li>Email: support-odoo@tesote.com</li>
-                    <li>Documentation: https://equipo.tesote.com/api/docs?version=v2</li>
-                    <li>GitHub: https://github.com/tesote/tesote-odoo-api-connector</li>
-                </ul>
-            </div>
-
-            <div class="warning-box">
-                <strong>Note:</strong> This module requires an active tesote.com account and valid API credentials. Contact tesote.com to obtain your API access token.
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>📜 License</h2>
-            <p>This module is licensed under LGPL-3.0 or later. You are free to use, modify, and distribute it according to the license terms.</p>
         </div>
     </div>
-</body>
-</html>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px; margin-bottom: 15px;">Transform Your Financial Data Management</h3>
+            <p class="oe_mt32" style="text-align: center; color: #4B5563; font-size: 16px; max-width: 800px; margin: 0 auto 20px;">
+                Seamlessly integrate tesote.com financial data with your Odoo ERP for unified business operations and real-time insights.
+            </p>
+            <div style="background: linear-gradient(135deg, rgba(45,45,45,0.08) 0%, rgba(26,26,26,0.08) 100%); border: 1px solid rgba(45,45,45,0.2); border-radius: 8px; padding: 20px; margin: 20px auto; max-width: 800px;">
+                <p style="margin: 0; color: #4B5563;"><strong style="color: #1F2937;">Built for Enterprise:</strong> The tesote.com Connector leverages cursor-based incremental synchronization, ensuring efficient data transfer even with high transaction volumes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">Key Features</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 30px;">Everything you need for seamless financial data integration</p>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px;">&#x1F504;</div>
+                <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Cursor-Based Sync</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Efficient incremental synchronization using cursor-based pagination. Only fetch new and updated data.</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px;">&#x1F514;</div>
+                <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Webhook Integration</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Real-time event notifications with HMAC-SHA256 signature verification for instant updates.</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px;">&#x1F4CA;</div>
+                <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Transaction Lifecycle</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Intelligent handling of transaction states from pending to completed with automatic updates.</p>
+            </div>
+        </div>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px;">&#x1F310;</div>
+                <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Multi-Language Support</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Full internationalization with complete translations for English and Spanish out of the box.</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px;">&#x26A1;</div>
+                <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Rate Limiting</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Built-in support for Standard (200/min), Premium (500/min), and Enterprise (1000/min) tiers.</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 20px;">&#x1F512;</div>
+                <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Secure by Design</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Bearer token authentication, HMAC-SHA256 verification, and full audit trail for all operations.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">How It Works</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 30px;">Get started in four simple steps</p>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span3" style="text-align: center; padding: 20px;">
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 16px; box-shadow: 0 4px 12px rgba(45, 45, 45, 0.3);">1</div>
+            <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Configure</h4>
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">Set up your tesote.com API credentials</p>
+        </div>
+        <div class="oe_span3" style="text-align: center; padding: 20px;">
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 16px; box-shadow: 0 4px 12px rgba(45, 45, 45, 0.3);">2</div>
+            <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Import</h4>
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">Import your financial accounts with one click</p>
+        </div>
+        <div class="oe_span3" style="text-align: center; padding: 20px;">
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 16px; box-shadow: 0 4px 12px rgba(45, 45, 45, 0.3);">3</div>
+            <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Sync</h4>
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">Sync transactions with cursor-based updates</p>
+        </div>
+        <div class="oe_span3" style="text-align: center; padding: 20px;">
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 16px; box-shadow: 0 4px 12px rgba(45, 45, 45, 0.3);">4</div>
+            <h4 style="color: #1F2937; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Manage</h4>
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">View and manage data directly in Odoo</p>
+        </div>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 16px 20px; max-width: 700px; margin: 0 auto;">
+                <p style="margin: 0; color: #4B5563; font-size: 14px;"><strong style="color: #059669;">Pro Tip:</strong> Enable scheduled actions to automatically sync transactions at regular intervals for hands-free operation.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">Technical Specifications</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 30px;">Built with enterprise requirements in mind</p>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span6">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; margin-bottom: 20px;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 16px 0;">&#x2699;&#xFE0F; Core Requirements</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #4B5563; font-size: 14px; line-height: 2;">
+                    <li>Odoo 18.0 Community or Enterprise</li>
+                    <li>tesote.com API v2.0.0 account</li>
+                    <li>Python requests library</li>
+                    <li>PostgreSQL database</li>
+                </ul>
+            </div>
+        </div>
+        <div class="oe_span6">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; margin-bottom: 20px;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 16px 0;">&#x1F527; Architecture</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #4B5563; font-size: 14px; line-height: 2;">
+                    <li>RESTful API with Bearer token auth</li>
+                    <li>Cursor-based incremental pagination</li>
+                    <li>Singleton backend pattern</li>
+                    <li>Extensible mapper/adapter design</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span6">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; margin-bottom: 20px;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 16px 0;">&#x1F6E1;&#xFE0F; Security</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #4B5563; font-size: 14px; line-height: 2;">
+                    <li>HMAC-SHA256 webhook signatures</li>
+                    <li>Secure credential storage</li>
+                    <li>Odoo security group integration</li>
+                    <li>Complete audit trail logging</li>
+                </ul>
+            </div>
+        </div>
+        <div class="oe_span6">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; margin-bottom: 20px;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 16px 0;">&#x1F4E6; Deployment</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #4B5563; font-size: 14px; line-height: 2;">
+                    <li>Self-hosted Odoo installations</li>
+                    <li>Odoo.sh cloud platform ready</li>
+                    <li>Docker development environment</li>
+                    <li>112 unit tests included</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">API Endpoints</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 30px;">Full integration with tesote.com API v2</p>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; max-width: 700px; margin: 0 auto;">
+                <div style="padding: 12px 0; border-bottom: 1px solid #E5E7EB;">
+                    <span style="display: inline-block; background: rgba(16, 185, 129, 0.15); color: #059669; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: monospace; margin-right: 12px;">GET</span>
+                    <code style="color: #1F2937; font-size: 14px;">/api/v2/accounts</code>
+                    <span style="color: #6B7280; font-size: 13px; float: right;">Fetch all accounts</span>
+                </div>
+                <div style="padding: 12px 0; border-bottom: 1px solid #E5E7EB;">
+                    <span style="display: inline-block; background: rgba(16, 185, 129, 0.15); color: #059669; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: monospace; margin-right: 12px;">GET</span>
+                    <code style="color: #1F2937; font-size: 14px;">/api/v2/accounts/{id}</code>
+                    <span style="color: #6B7280; font-size: 13px; float: right;">Get account details</span>
+                </div>
+                <div style="padding: 12px 0; border-bottom: 1px solid #E5E7EB;">
+                    <span style="display: inline-block; background: rgba(59, 130, 246, 0.15); color: #2563EB; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: monospace; margin-right: 12px;">POST</span>
+                    <code style="color: #1F2937; font-size: 14px;">/api/v2/transactions/sync</code>
+                    <span style="color: #6B7280; font-size: 13px; float: right;">Sync with cursor</span>
+                </div>
+                <div style="padding: 12px 0; border-bottom: 1px solid #E5E7EB;">
+                    <span style="display: inline-block; background: rgba(16, 185, 129, 0.15); color: #059669; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: monospace; margin-right: 12px;">GET</span>
+                    <code style="color: #1F2937; font-size: 14px;">/api/v2/status</code>
+                    <span style="color: #6B7280; font-size: 13px; float: right;">Check API status</span>
+                </div>
+                <div style="padding: 12px 0;">
+                    <span style="display: inline-block; background: rgba(16, 185, 129, 0.15); color: #059669; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: monospace; margin-right: 12px;">GET</span>
+                    <code style="color: #1F2937; font-size: 14px;">/api/v2/whoami</code>
+                    <span style="color: #6B7280; font-size: 13px; float: right;">Get client info</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">Webhook Events</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 30px;">Real-time notifications for instant data updates</p>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">sync.updates_available</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Triggered when new data is available. Automatically initiates sync to fetch latest changes.</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">accounts.created/updated</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Notifications when accounts are created or modified. Keep records in perfect sync.</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 24px; height: 100%;">
+                <h4 style="color: #1F2937; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">transactions.created/updated</h4>
+                <p style="color: #6B7280; font-size: 14px; margin: 0; line-height: 1.6;">Instant alerts for new transactions or status changes in real-time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">Internationalization</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 20px;">Full multi-language support out of the box</p>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <span style="display: inline-block; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin: 4px;">English (en_US)</span>
+            <span style="display: inline-block; background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin: 4px;">Spanish (es)</span>
+        </div>
+        <p style="text-align: center; color: #6B7280; font-size: 14px; max-width: 600px; margin: 0 auto;">
+            All user interface elements, error messages, and help texts are fully translated. Additional languages can be added through standard Odoo translation mechanisms.
+        </p>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan" style="color: #1F2937; font-size: 24px;">Support &amp; Documentation</h3>
+        <p class="oe_mt32" style="text-align: center; color: #6B7280; margin-bottom: 30px;">Resources to help you get started</p>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; text-align: center;">
+                <div style="font-size: 28px; margin-bottom: 12px;">&#x1F4E7;</div>
+                <p style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Email Support</p>
+                <p style="color: #1F2937; font-weight: 500; font-size: 14px; margin: 0;">support-odoo@tesote.com</p>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; text-align: center;">
+                <div style="font-size: 28px; margin-bottom: 12px;">&#x1F4DA;</div>
+                <p style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">API Documentation</p>
+                <a href="https://equipo.tesote.com/api/docs?version=v2" target="_blank" style="color: #2D2D2D; font-weight: 500; font-size: 14px; text-decoration: none;">View Documentation</a>
+            </div>
+        </div>
+        <div class="oe_span4">
+            <div style="background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; text-align: center;">
+                <div style="font-size: 28px; margin-bottom: 12px;">&#x1F4BB;</div>
+                <p style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Source Code</p>
+                <a href="https://github.com/tesote/tesote-odoo-api-connector" target="_blank" style="color: #2D2D2D; font-weight: 500; font-size: 14px; text-decoration: none;">GitHub Repository</a>
+            </div>
+        </div>
+    </div>
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12">
+            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 16px 20px; max-width: 700px; margin: 20px auto;">
+                <p style="margin: 0; color: #4B5563; font-size: 14px;"><strong style="color: #B45309;">Note:</strong> This module requires an active tesote.com account and valid API credentials. Contact tesote.com to obtain your API access token.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="oe_span12" style="text-align: center; padding: 30px 20px; border-top: 1px solid #E5E7EB;">
+            <p style="color: #6B7280; font-size: 14px; margin: 0;">Licensed under LGPL-3.0 or later. Copyright tesote.com.</p>
+            <p style="color: #9CA3AF; font-size: 13px; margin: 8px 0 0 0;">tesote.com Connector v18.0.1.0.0</p>
+        </div>
+    </div>
+</section>
