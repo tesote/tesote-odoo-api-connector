@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024 tesote.com
+     License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html) -->
+<odoo>
+    <!-- Form View -->
+    <record id="view_tesote_account_balance_history_form" model="ir.ui.view">
+        <field name="name">tesote.account.balance.history.form</field>
+        <field name="model">tesote.account.balance.history</field>
+        <field name="arch" type="xml">
+            <form string="Balance History" create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <group string="Account Information">
+                            <field name="account_id"/>
+                            <field name="bank_name"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group string="Balance Details">
+                            <field name="balance"/>
+                            <field name="previous_balance"/>
+                            <field name="balance_change"/>
+                            <field name="balance_change_percent"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recording Details">
+                            <field name="recorded_at"/>
+                            <field name="source"/>
+                            <field name="sync_log_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_tesote_account_balance_history_list" model="ir.ui.view">
+        <field name="name">tesote.account.balance.history.list</field>
+        <field name="model">tesote.account.balance.history</field>
+        <field name="arch" type="xml">
+            <list string="Balance History" create="false" edit="false"
+                  decoration-success="balance_change &gt; 0"
+                  decoration-danger="balance_change &lt; 0">
+                <field name="recorded_at"/>
+                <field name="account_id"/>
+                <field name="bank_name" optional="show"/>
+                <field name="balance" sum="Current Total"/>
+                <field name="previous_balance" optional="hide"/>
+                <field name="balance_change"/>
+                <field name="balance_change_percent" optional="show"/>
+                <field name="currency_id"/>
+                <field name="source" widget="badge"/>
+                <field name="sync_log_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Graph View - Line Chart for Balance Trends -->
+    <record id="view_tesote_account_balance_history_graph" model="ir.ui.view">
+        <field name="name">tesote.account.balance.history.graph</field>
+        <field name="model">tesote.account.balance.history</field>
+        <field name="arch" type="xml">
+            <graph string="Balance Trends" type="line" stacked="False">
+                <field name="recorded_date" interval="day"/>
+                <field name="balance" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot View for Analysis -->
+    <record id="view_tesote_account_balance_history_pivot" model="ir.ui.view">
+        <field name="name">tesote.account.balance.history.pivot</field>
+        <field name="model">tesote.account.balance.history</field>
+        <field name="arch" type="xml">
+            <pivot string="Balance Analysis">
+                <field name="account_id" type="row"/>
+                <field name="recorded_date" interval="month" type="col"/>
+                <field name="balance" type="measure"/>
+                <field name="balance_change" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_tesote_account_balance_history_search" model="ir.ui.view">
+        <field name="name">tesote.account.balance.history.search</field>
+        <field name="model">tesote.account.balance.history</field>
+        <field name="arch" type="xml">
+            <search string="Search Balance History">
+                <field name="account_id"/>
+                <field name="bank_name"/>
+                <field name="source"/>
+                <separator/>
+                <filter string="Today" name="today"
+                        domain="[('recorded_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 7 Days" name="last_7_days"
+                        domain="[('recorded_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 30 Days" name="last_30_days"
+                        domain="[('recorded_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 90 Days" name="last_90_days"
+                        domain="[('recorded_date', '&gt;=', (context_today() - datetime.timedelta(days=90)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Increases" name="increases"
+                        domain="[('balance_change', '&gt;', 0)]"/>
+                <filter string="Decreases" name="decreases"
+                        domain="[('balance_change', '&lt;', 0)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Account" name="group_account"
+                            context="{'group_by': 'account_id'}"/>
+                    <filter string="Day" name="group_day"
+                            context="{'group_by': 'recorded_date:day'}"/>
+                    <filter string="Month" name="group_month"
+                            context="{'group_by': 'recorded_date:month'}"/>
+                    <filter string="Source" name="group_source"
+                            context="{'group_by': 'source'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Main Action - Balance Dashboard -->
+    <record id="action_tesote_balance_dashboard" model="ir.actions.act_window">
+        <field name="name">Balance Dashboard</field>
+        <field name="res_model">tesote.account.balance.history</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="search_view_id" ref="view_tesote_account_balance_history_search"/>
+        <field name="context">{
+            'search_default_last_30_days': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No balance history recorded yet
+            </p>
+            <p>
+                Balance snapshots are automatically recorded when account balances
+                change during synchronization.
+            </p>
+        </field>
+    </record>
+</odoo>

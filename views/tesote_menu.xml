@@ -117,4 +117,12 @@
         parent="menu_tesote_reports"
         action="action_tesote_transaction"
         sequence="10"/>
+
+    <!-- Balance Dashboard -->
+    <menuitem
+        id="menu_tesote_balance_dashboard"
+        name="Balance Dashboard"
+        parent="menu_tesote_reports"
+        action="action_tesote_balance_dashboard"
+        sequence="20"/>
 </odoo>

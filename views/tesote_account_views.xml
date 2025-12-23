@@ -14,6 +14,9 @@
                         <button class="oe_stat_button" type="object" name="action_view_transactions" icon="fa-exchange">
                             <field string="Transactions" name="transaction_count" widget="statinfo"/>
                         </button>
+                        <button class="oe_stat_button" type="object" name="action_view_balance_history" icon="fa-line-chart">
+                            <field string="Balance History" name="balance_history_count" widget="statinfo"/>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <h1>

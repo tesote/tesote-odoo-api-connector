@@ -1,0 +1,171 @@
+{
+	"info": {
+		"_postman_id": "tesote-accounting-api-v1",
+		"name": "Tesote Accounting API v1",
+		"description": "Generic ERP-agnostic accounting API with HMAC-SHA256 authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8069",
+			"type": "string"
+		},
+		{
+			"key": "secret_key",
+			"value": "YOUR_SECRET_KEY_HERE",
+			"type": "string"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const timestamp = Math.floor(Date.now() / 1000).toString();",
+					"const url = new URL(pm.request.url.toString());",
+					"const path = url.pathname;",
+					"",
+					"let signedPayload;",
+					"",
+					"if (pm.request.method === 'POST' && pm.request.body && pm.request.body.raw) {",
+					"    const body = pm.request.body.raw;",
+					"    signedPayload = `${timestamp}.${path}.${body}`;",
+					"} else {",
+					"    const params = [];",
+					"    pm.request.url.query.each((param) => {",
+					"        if (param.value) {",
+					"            params.push(`${param.key}=${param.value}`);",
+					"        }",
+					"    });",
+					"    const queryString = params.sort().join('&');",
+					"    signedPayload = `${timestamp}.${path}.${queryString}`;",
+					"}",
+					"",
+					"const secret = pm.collectionVariables.get('secret_key');",
+					"const signature = CryptoJS.HmacSHA256(signedPayload, secret).toString(CryptoJS.enc.Hex);",
+					"",
+					"pm.request.headers.add({ key: 'X-Tesote-Timestamp', value: timestamp });",
+					"pm.request.headers.add({ key: 'X-Tesote-Signature', value: signature });",
+					"",
+					"console.log('=== HMAC Auth Debug ===');",
+					"console.log('Method:', pm.request.method);",
+					"console.log('Path:', path);",
+					"console.log('Signed Payload:', signedPayload);",
+					"console.log('Signature:', signature);"
+				]
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "List Accounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tesote/api/v1/accounting/accounts?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["tesote", "api", "v1", "accounting", "accounts"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "List accounts with cursor-based pagination"
+					}
+				},
+				{
+					"name": "List Accounts (Page 2)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tesote/api/v1/accounting/accounts?limit=10&cursor=10",
+							"host": ["{{base_url}}"],
+							"path": ["tesote", "api", "v1", "accounting", "accounts"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "cursor",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get next page using cursor from previous response"
+					}
+				},
+				{
+					"name": "Get Account by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tesote/api/v1/accounting/accounts/1",
+							"host": ["{{base_url}}"],
+							"path": ["tesote", "api", "v1", "accounting", "accounts", "1"]
+						},
+						"description": "Get a single account by its ID"
+					}
+				},
+				{
+					"name": "Search Accounts",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"10\",\n    \"limit\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tesote/api/v1/accounting/accounts/search",
+							"host": ["{{base_url}}"],
+							"path": ["tesote", "api", "v1", "accounting", "accounts", "search"]
+						},
+						"description": "Search accounts with filters"
+					}
+				},
+				{
+					"name": "Get Account Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tesote/api/v1/accounting/accounts/types",
+							"host": ["{{base_url}}"],
+							"path": ["tesote", "api", "v1", "accounting", "accounts", "types"]
+						},
+						"description": "Get all available account types"
+					}
+				},
+				{
+					"name": "Get Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tesote/api/v1/accounting/accounts/stats",
+							"host": ["{{base_url}}"],
+							"path": ["tesote", "api", "v1", "accounting", "accounts", "stats"]
+						},
+						"description": "Get account statistics"
+					}
+				}
+			]
+		}
+	]
+}
