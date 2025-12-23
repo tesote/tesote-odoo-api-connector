@@ -690,3 +690,117 @@ msgstr "Ajuste de saldo de Tesote"
 #, python-format
 msgid "Balance adjustment for Tesote account %(account)s"
 msgstr "Ajuste de saldo para cuenta Tesote %(account)s"
+
+#. module: tesote_connector
+#: model:ir.model,name:tesote_connector.model_tesote_account_balance_history
+msgid "Tesote Account Balance History"
+msgstr "Historial de Saldo de Cuenta Tesote"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_balance_dashboard
+#: model:ir.actions.act_window,name:tesote_connector.action_tesote_balance_dashboard
+msgid "Balance Dashboard"
+msgstr "Panel de Saldos"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_graph
+msgid "Balance Trends"
+msgstr "Tendencias de Saldo"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_pivot
+msgid "Balance Analysis"
+msgstr "Análisis de Saldos"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account_balance_history__recorded_at
+msgid "Recorded At"
+msgstr "Registrado En"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account_balance_history__previous_balance
+msgid "Previous Balance"
+msgstr "Saldo Anterior"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account_balance_history__balance_change
+msgid "Balance Change"
+msgstr "Cambio de Saldo"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account_balance_history__balance_change_percent
+msgid "Change %"
+msgstr "Cambio %"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_search
+msgid "Increases"
+msgstr "Incrementos"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_search
+msgid "Decreases"
+msgstr "Decrementos"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account_balance_history__source
+msgid "Source"
+msgstr "Origen"
+
+#. module: tesote_connector
+#: selection:tesote.account.balance.history,source:0
+msgid "API Sync"
+msgstr "Sincronización API"
+
+#. module: tesote_connector
+#: selection:tesote.account.balance.history,source:0
+msgid "Webhook Update"
+msgstr "Actualización Webhook"
+
+#. module: tesote_connector
+#: selection:tesote.account.balance.history,source:0
+msgid "Manual Update"
+msgstr "Actualización Manual"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account__balance_history_ids
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_form
+#: code:addons/tesote_connector/models/tesote_account.py:0
+#, python-format
+msgid "Balance History"
+msgstr "Historial de Saldo"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_account__balance_history_count
+msgid "Balance History Count"
+msgstr "Cantidad de Historial de Saldo"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_form
+msgid "Balance Snapshot"
+msgstr "Instantánea de Saldo"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_form
+msgid "Change Information"
+msgstr "Información del Cambio"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_search
+msgid "Day"
+msgstr "Día"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_balance_history_search
+msgid "Month"
+msgstr "Mes"
+
+#. module: tesote_connector
+#: model:ir.actions.act_window,help:tesote_connector.action_tesote_balance_dashboard
+msgid "No balance history recorded yet"
+msgstr "Aún no hay historial de saldo registrado"
+
+#. module: tesote_connector
+#: model:ir.actions.act_window,help:tesote_connector.action_tesote_balance_dashboard
+msgid "Balance history will be recorded automatically during account synchronization."
+msgstr "El historial de saldo se registrará automáticamente durante la sincronización de cuentas."

@@ -17,3 +17,5 @@ access_tesote_webhook_monitor_user,tesote.webhook.monitor.user,model_tesote_webh
 access_tesote_webhook_monitor_manager,tesote.webhook.monitor.manager,model_tesote_webhook_monitor,account.group_account_manager,1,1,1,1
 access_tesote_webhook_secret_wizard_user,tesote.webhook.secret.wizard.user,model_tesote_webhook_secret_wizard,base.group_user,1,1,1,1
 access_tesote_webhook_secret_wizard_manager,tesote.webhook.secret.wizard.manager,model_tesote_webhook_secret_wizard,account.group_account_manager,1,1,1,1
+access_tesote_account_balance_history_user,tesote.account.balance.history.user,model_tesote_account_balance_history,base.group_user,1,0,0,0
+access_tesote_account_balance_history_manager,tesote.account.balance.history.manager,model_tesote_account_balance_history,account.group_account_manager,1,1,1,1

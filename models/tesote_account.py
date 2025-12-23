@@ -83,6 +83,25 @@ class TesoteAccount(models.Model):
 
     transaction_ids = fields.One2many("tesote.transaction", "account_id", string="Transactions")
 
+    balance_history_ids = fields.One2many(
+        "tesote.account.balance.history",
+        "account_id",
+        string="Balance History",
+        help="Historical balance snapshots",
+    )
+
+    balance_history_count = fields.Integer(
+        string="Balance History Count",
+        compute="_compute_balance_history_count",
+        store=False,
+    )
+
+    @api.depends("balance_history_ids")
+    def _compute_balance_history_count(self):
+        """Compute balance history count."""
+        for account in self:
+            account.balance_history_count = len(account.balance_history_ids)
+
     sync_cursor = fields.Char(string="Sync Cursor", help="Cursor for incremental transaction sync")
 
     sync_date = fields.Datetime(string="Last Sync", help="Last successful transaction sync date")
@@ -167,6 +186,68 @@ class TesoteAccount(models.Model):
                 "default_account_id": self.id,
             },
         }
+
+    def action_view_balance_history(self):
+        """
+        Open view to display account balance history.
+
+        Returns:
+            Action dictionary to open balance history with graph view
+        """
+        self.ensure_one()
+
+        return {
+            "name": _("Balance History"),
+            "type": "ir.actions.act_window",
+            "res_model": "tesote.account.balance.history",
+            "view_mode": "graph,list,pivot,form",
+            "domain": [("account_id", "=", self.id)],
+            "context": {
+                "default_account_id": self.id,
+            },
+        }
+
+    def _record_balance_history(self, sync_log=None, source="sync"):
+        """
+        Record a balance snapshot for historical tracking.
+
+        Only creates a history entry if the balance has changed
+        from the previous snapshot (threshold: 0.01).
+
+        Args:
+            sync_log: Optional tesote.sync.log record to link
+            source: Source of the snapshot ('sync', 'webhook', 'manual')
+
+        Returns:
+            Created tesote.account.balance.history record or False
+        """
+        self.ensure_one()
+
+        BalanceHistory = self.env["tesote.account.balance.history"]
+
+        # Get previous balance from most recent history entry
+        last_entry = BalanceHistory.search(
+            [("account_id", "=", self.id)],
+            order="recorded_at desc",
+            limit=1,
+        )
+
+        previous_balance = last_entry.balance if last_entry else 0.0
+
+        # Only record if balance changed or no previous entry exists
+        if not last_entry or abs(self.balance - previous_balance) >= 0.01:
+            return BalanceHistory.create(
+                {
+                    "account_id": self.id,
+                    "balance": self.balance,
+                    "currency_id": self.currency_id.id if self.currency_id else False,
+                    "previous_balance": previous_balance,
+                    "sync_log_id": sync_log.id if sync_log else False,
+                    "source": source,
+                }
+            )
+
+        return False
 
     def sync_balance_to_odoo(self):
         """
@@ -547,3 +628,6 @@ class TesoteAccount(models.Model):
                     _logger.info(f"Auto-activated currency {currency_code} for invoicing")
 
         self.write(vals)
+
+        # Record balance history for dashboard tracking
+        self._record_balance_history(source="sync")
