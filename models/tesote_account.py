@@ -57,6 +57,27 @@ class TesoteAccount(models.Model):
         for account in self:
             account.transaction_count = len(account.transaction_ids)
 
+    @api.depends("balance_history_ids")
+    def _compute_balance_history_count(self):
+        """Compute balance history count."""
+        for account in self:
+            account.balance_history_count = len(account.balance_history_ids)
+
+    def action_view_balance_history(self):
+        """Open balance history view for this account."""
+        self.ensure_one()
+        return {
+            "name": _("Balance History"),
+            "type": "ir.actions.act_window",
+            "res_model": "tesote.account.balance.history",
+            "view_mode": "list,graph,pivot,form",
+            "domain": [("account_id", "=", self.id)],
+            "context": {
+                "default_account_id": self.id,
+                "search_default_last_30_days": 1,
+            },
+        }
+
     bank_name = fields.Char(string="Bank Name", help="Name of the financial institution")
 
     legal_entity_name = fields.Char(string="Legal Entity", help="Legal entity owning the account")
@@ -82,6 +103,17 @@ class TesoteAccount(models.Model):
     )
 
     transaction_ids = fields.One2many("tesote.transaction", "account_id", string="Transactions")
+
+    balance_history_ids = fields.One2many(
+        "tesote.account.balance.history",
+        "account_id",
+        string="Balance History",
+    )
+
+    balance_history_count = fields.Integer(
+        string="Balance History Count",
+        compute="_compute_balance_history_count",
+    )
 
     sync_cursor = fields.Char(string="Sync Cursor", help="Cursor for incremental transaction sync")
 
@@ -473,7 +505,17 @@ class TesoteAccount(models.Model):
                     currency.active = True
                     _logger.info(f"Auto-activated currency {currency_code} for invoicing")
 
-        return self.create(vals)
+        account = self.create(vals)
+
+        # Record initial balance in history
+        if vals.get("balance"):
+            self.env["tesote.account.balance.history"].record_balance(
+                account=account,
+                balance=vals["balance"],
+                source="sync",
+            )
+
+        return account
 
     def update_from_tesote(self, data):
         """
@@ -545,5 +587,14 @@ class TesoteAccount(models.Model):
                 if not currency.active:
                     currency.active = True
                     _logger.info(f"Auto-activated currency {currency_code} for invoicing")
+
+        # Record balance history if balance changed significantly
+        new_balance = vals.get("balance")
+        if new_balance is not None and abs(new_balance - (self.balance or 0)) >= 0.01:
+            self.env["tesote.account.balance.history"].record_balance(
+                account=self,
+                balance=new_balance,
+                source="sync",
+            )
 
         self.write(vals)

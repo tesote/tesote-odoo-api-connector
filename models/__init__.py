@@ -8,6 +8,7 @@
 from . import tesote_binding  # noqa: F401 - Base model, import FIRST
 from . import res_currency  # noqa: F401
 from . import tesote_account  # noqa: F401 - Inherits from tesote_binding
+from . import tesote_account_balance_history  # noqa: F401
 from . import tesote_backend  # noqa: F401
 from . import tesote_sync_log  # noqa: F401
 from . import tesote_transaction  # noqa: F401 - Inherits from tesote_binding
