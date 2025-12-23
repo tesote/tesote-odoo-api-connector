@@ -27,7 +27,7 @@ def main():
     try:
         uid = common.authenticate(DB_NAME, USERNAME, PASSWORD, {})
         if not uid:
-            print(f"❌ Authentication failed. Check credentials.")
+            print("❌ Authentication failed. Check credentials.")
             print(f"   DB: {DB_NAME}, User: {USERNAME}")
             return
         print(f"✅ Connected as user ID: {uid}")
